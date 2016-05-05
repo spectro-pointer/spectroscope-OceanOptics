@@ -23,7 +23,7 @@ __version__ = '0.2'
 
 import socket
 from sys import exit
-from time import sleep
+#from time import sleep
 import struct
 
 # server address
@@ -91,7 +91,7 @@ class Spectrometer(object):
 	# convenience constant for null/no parameters to a command
 	no_parameters = "\x00\x00"
 
-	def __init__(self, ip_address, port=port):
+	def __init__(self, ip_address, port=port, channel=0):
 		# connect timeout
 		self.timeout = 10
 		# default refresh interval for scope mode
@@ -99,6 +99,8 @@ class Spectrometer(object):
 		
 		self.ip_address = ip_address
 		self.port = port
+		
+		self.channel=channel
 		
 		self.sock = self._connect_or_abort(ip_address, port)
 
@@ -176,89 +178,93 @@ class Spectrometer(object):
 	def get_version(self):
 		return self._send_command(self.cmd_get_version)
 
-	def get_serial_number(self, channel=0):
-		return self._send_command(self.cmd_get_serial_number, channel)
+	def get_serial(self):
+		return self._send_command(self.cmd_get_serial_number, self.channel)
 
-	def get_integration_time(self, channel=0):
-		return self._send_command(self.cmd_get_integration_time, channel)
+	def get_integration(self):
+		return self._send_command(self.cmd_get_integration_time, self.channel)
 	
-	def get_get_boxcar_width(self):
-		return self._send_command(self.cmd_get_boxcar_width)
+	def get_get_boxcar(self):
+		return self._send_command(self.cmd_get_boxcar_width, self.channel)
 	
-	def get_scans_to_average(self):
-		return self._send_command(self.cmd_get_scans_to_average)
+	def get_average(self):
+		return self._send_command(self.cmd_get_scans_to_average, self.channel)
 
-	def get_target_url(self):
+	def get_target(self):
 		return self._send_command(self.cmd_get_target_url)
 
 	def get_spectrum(self):
-		return self._send_command(self.cmd_get_spectrum)
+		# FIXME: process header
+		return self._send_command(self.cmd_get_spectrum, self.channel)
 
 	def get_wavelengths(self):
-		return self._send_command(self.cmd_get_wavelengths)
+		# FIXME: process header
+		return self._send_command(self.cmd_get_wavelengths, self.channel)
 
 	def get_name(self):
-		return self._send_command(self.cmd_get_name)
+		return self._send_command(self.cmd_get_name, self.channel)
 
-	def get_calibration_coefficients_from_buffer(self):
-		return self._send_command(self.cmd_get_calibration_coefficients_from_buffer)
+	def get_calibration_buffer(self):
+		# FIXME: process header
+		return self._send_command(self.cmd_get_calibration_coefficients_from_buffer, self.channel)
 
-	def get_calibration_coefficients_from_eeprom(self):
-		return self._send_command(self.cmd_get_calibration_coefficients_from_eeprom)
+	def get_calibration_eeprom(self):
+		# FIXME: process header
+		return self._send_command(self.cmd_get_calibration_coefficients_from_eeprom, self.channel)
 
-	def get_pixel_binning_factor(self):
-		return self._send_command(self.cmd_get_pixel_binning_factor)
+	def get_binning(self):
+		return self._send_command(self.cmd_get_pixel_binning_factor, self.channel)
 
-	def get_integration_time_minimum(self):
-		return self._send_command(self.cmd_get_integration_time_minimum)
+	def get_min_integration(self):
+		return self._send_command(self.cmd_get_integration_time_minimum, self.channel)
 
-	def get_integration_time_maximum(self):
-		return self._send_command(self.cmd_get_integration_time_maximum)
+	def get_max_integration(self):
+		return self._send_command(self.cmd_get_integration_time_maximum, self.channel)
 
-	def get_intensity_maximum(self):
-		return self._send_command(self.cmd_get_intensity_maximum)
+	def get_max_intensity(self):
+		return self._send_command(self.cmd_get_intensity_maximum, self.channel)
 
-	def get_electric_dark_correction(self):
-		return self._send_command(self.cmd_get_electric_dark_correction)
+	def get_e_d_correct(self):
+		return self._send_command(self.cmd_get_electric_dark_correction, self.channel)
 
 	def get_tec_temperature(self):
-		return self._send_command(self.cmd_get_tec_temperature)
+		return self._send_command(self.cmd_get_tec_temperature, self.channel)
 
 	def get_current_status(self):
-		return self._send_command(self.cmd_get_current_status)
+		return self._send_command(self.cmd_get_current_status, self.channel)
 
 	def get_current_spectrum(self):
 		return self._send_command(self.cmd_get_current_spectrum)
 
 	def get_max_acquisitions(self):
-		return self._send_command(self.cmd_get_max_acquisitions)
+		return self._send_command(self.cmd_get_max_acquisitions, self.channel)
 
-	def get_file_save_mode(self):
-		return self._send_command(self.cmd_get_file_save_mode)
+	def get_save_mode(self):
+		return self._send_command(self.cmd_get_file_save_mode, self.channel)
 
 	def get_file_prefix(self):
-		return self._send_command(self.cmd_get_file_prefix)
+		return self._send_command(self.cmd_get_file_prefix, self.channel)
 
 	def get_sequence_type(self):
-		return self._send_command(self.cmd_get_sequence_type)
+		return self._send_command(self.cmd_get_sequence_type, self.channel)
 
 	def get_sequence_interval(self):
-		return self._send_command(self.cmd_get_sequence_interval)
+		return self._send_command(self.cmd_get_sequence_interval, self.channel)
 
-	def get_save_directory(self):
-		return self._send_command(self.cmd_get_save_directory)
+	def get_save_location(self):
+		return self._send_command(self.cmd_get_save_directory, self.channel)
 
 	def get_sequence_state(self):
-		return self._send_command(self.cmd_get_sequence_state)
+		return self._send_command(self.cmd_get_sequence_state, self.channel)
 
-	def get_current_sequence_number(self):
-		return self._send_command(self.cmd_get_current_sequence_number)
+	def get_sequence_number(self):
+		return self._send_command(self.cmd_get_current_sequence_number, self.channel)
 
 	def get_scope_mode(self):
-		return self._send_command(self.cmd_get_scope_mode)
+		return self._send_command(self.cmd_get_scope_mode, self.channel)
 
 	def get_scope_interval(self):
-		return self._send_command(self.cmd_get_scope_interval)
+		return self._send_command(self.cmd_get_scope_interval, self.channel)
 
 	def set_integration_time(self, seconds):
 		return self._send_command(self.cmd_set_integration_time, int(seconds*1e6))
@@ -266,5 +272,5 @@ class Spectrometer(object):
 if __name__ == '__main__':
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
-	print('Serial:', spectrometer.get_serial_number())
-	print('Integration time:', spectrometer.get_integration_time())
+	print('Serial:', spectrometer.get_serial())
+	print('Integration time:', spectrometer.get_integration())
