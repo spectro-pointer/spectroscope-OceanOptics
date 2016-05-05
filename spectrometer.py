@@ -183,7 +183,7 @@ class Spectrometer(object):
 		code = 0
 		if len(result) >= 2:
 			code, result = self._extract_result_code_from_response(result)
-		return result if code == 1 else None
+		return result if code == 1 else None # FIXME?: what are valid code values?
 
 	def get_version(self):
 		return self._send_command(self.cmd_get_version)
