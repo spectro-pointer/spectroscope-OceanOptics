@@ -153,12 +153,13 @@ class Spectrometer(object):
 		response_string = response_string[2:]
 		return result, response_string
 	
-	def _send_command(self, cmd, *args):
-		if self.sock is None:
-			self.sock = self._connect_or_abort(ip_address, port)
-
-		arguments = ''
+	def _close(self):
+		self.sock.close()
+		self.sock = None
+	
+	def _build_command(self, cmd, *args):
 		msg = bytearray(cmd, 'utf')
+		arguments = ''
 		if len(args):
 			for a in args:
 				arguments += str(a) + ';'
@@ -166,10 +167,19 @@ class Spectrometer(object):
 		else:
 			arguments = self.no_parameters
 		msg += bytearray(arguments, 'utf');
+		return msg
+	
+	def _send_command(self, cmd, *args):
+		if self.sock is None:
+			self.sock = self._connect_or_abort(ip_address, port)
+		msg = self._build_command(cmd, *args)
+
 		self._socket_write_all(msg)
+		
 		result = self._socket_read_all()
-		self.sock.close()
-		self.sock = None
+		
+		self._close()
+		
 		code = 0
 		if len(result) >= 2:
 			code, result = self._extract_result_code_from_response(result)
@@ -194,8 +204,31 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_target_url)
 
 	def get_spectrum(self):
-		# FIXME: process header
-		return self._send_command(self.cmd_get_spectrum, self.channel)
+		if self.sock is None:
+			self.sock = self._connect_or_abort(ip_address, port)
+
+		msg = self._build_command(self.cmd_get_spectrum, self.channel)
+
+		self._socket_write_all(msg)
+
+		# we are expecting 2 bytes result code
+		out, result = self.socket_read_n(2)
+		res0 = ord(out[0]) << 8
+		res1 = ord(out[1])
+		result_code = res0 | res1
+	
+		# now we are expecting 4 bytes with the result length
+		out, result = self.socket_read_n(4)
+		b0 = ord(out[0]) << 24
+		b1 = ord(out[1]) << 16
+		b2 = ord(out[2]) << 8
+		b3 = ord(out[3])
+		result_length = b0 | b1 | b2 | b3
+	
+		spectrum_string, _ = self.socket_read_n(result_length)
+		self._close()
+		
+		return spectrum_string
 
 	def get_wavelengths(self):
 		# FIXME: process header
