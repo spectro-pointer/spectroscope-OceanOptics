@@ -161,8 +161,10 @@ class Spectrometer(object):
 		msg = bytearray(cmd, 'utf')
 		arguments = ''
 		if len(args):
-			for a in args:
-				arguments += str(a) + ';'
+			for i, a in enumerate(args):
+				arguments += str(a)
+				if i < len(args)-1:
+					arguments += ';'
 			msg += struct.pack('!H', len(arguments));
 		else:
 			arguments = self.no_parameters
@@ -303,13 +305,13 @@ class Spectrometer(object):
 	def get_scope_interval(self):
 		return self._send_command(self.cmd_get_scope_interval, self.channel)
 
-	def set_integration(self, seconds):
-		return self._send_command(self.cmd_set_integration_time, int(seconds*1e6))
+	def set_integration(self, microseconds):
+		return self._send_command(self.cmd_set_integration_time, self.channel, int(microseconds))
 
 if __name__ == '__main__':
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
 	print('Serial:', spectrometer.get_serial())
 	print('Spectrum:', spectrometer.get_spectrum())
-	print('Set integration time 10:', spectrometer.set_integration(10))
-	print('Integration time:', spectrometer.get_integration())
+	print('Set integration time 1 second:', spectrometer.set_integration(1e6))
+	print('Integration time [µs]:', spectrometer.get_integration())
