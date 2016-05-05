@@ -303,12 +303,13 @@ class Spectrometer(object):
 	def get_scope_interval(self):
 		return self._send_command(self.cmd_get_scope_interval, self.channel)
 
-	def set_integration_time(self, seconds):
+	def set_integration(self, seconds):
 		return self._send_command(self.cmd_set_integration_time, int(seconds*1e6))
 
 if __name__ == '__main__':
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
 	print('Serial:', spectrometer.get_serial())
-	print('Integration time:', spectrometer.get_integration())
 	print('Spectrum:', spectrometer.get_spectrum())
+	print('Set integration time 10:', spectrometer.set_integration(10))
+	print('Integration time:', spectrometer.get_integration())
