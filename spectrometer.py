@@ -19,11 +19,12 @@
     along with Pointer.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-__version__ = '0.1'
+__version__ = '0.2'
 
 import socket
 from sys import exit
 from time import sleep
+import struct
 
 # server address
 ip_address = "192.168.2.205"
@@ -120,7 +121,7 @@ class Spectrometer(object):
 		buffer_length = len(buffer)
 		total_sent = 0
 		while (total_sent < buffer_length):
-			count = self.sock.send(bytearray(buffer[total_sent:], 'utf')) 
+			count = self.sock.send(buffer[total_sent:]) 
 			total_sent += count
 		if count == None: 
 			total_sent = None
@@ -150,10 +151,20 @@ class Spectrometer(object):
 		response_string = response_string[2:]
 		return result, response_string
 	
-	def _send_command(self, cmd):
+	def _send_command(self, cmd, *args):
 		if self.sock is None:
 			self.sock = self._connect_or_abort(ip_address, port)
-		self._socket_write_all(cmd + self.no_parameters)
+
+		arguments = ''
+		msg = bytearray(cmd, 'utf')
+		if len(args):
+			for a in args:
+				arguments += str(a) + ';'
+			msg += struct.pack('!H', len(arguments));
+		else:
+			arguments = self.no_parameters
+		msg += bytearray(arguments, 'utf');
+		self._socket_write_all(msg)
 		result = self._socket_read_all()
 		self.sock.close()
 		self.sock = None
@@ -165,11 +176,11 @@ class Spectrometer(object):
 	def get_version(self):
 		return self._send_command(self.cmd_get_version)
 
-	def get_serial_number(self):
-		return self._send_command(self.cmd_get_serial_number)
+	def get_serial_number(self, channel=0):
+		return self._send_command(self.cmd_get_serial_number, channel)
 
-	def get_integration_time(self):
-		return self._send_command(self.cmd_get_integration_time)
+	def get_integration_time(self, channel=0):
+		return self._send_command(self.cmd_get_integration_time, channel)
 	
 	def get_get_boxcar_width(self):
 		return self._send_command(self.cmd_get_boxcar_width)
@@ -248,6 +259,9 @@ class Spectrometer(object):
 
 	def get_scope_interval(self):
 		return self._send_command(self.cmd_get_scope_interval)
+
+	def set_integration_time(self, seconds):
+		return self._send_command(self.cmd_set_integration_time, int(seconds*1e6))
 
 if __name__ == '__main__':
 	spectrometer = Spectrometer(ip_address, port)
