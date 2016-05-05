@@ -185,6 +185,37 @@ class Spectrometer(object):
 			code, result = self._extract_result_code_from_response(result)
 		return result if code == 1 else None # FIXME?: what are valid code values?
 
+	def _send_command_n(self, cmd, *args):
+		if self.sock is None:
+			self.sock = self._connect_or_abort(ip_address, port)
+
+		msg = self._build_command(cmd, *args)
+
+		self._socket_write_all(msg)
+
+		output_string = None
+
+		# we are expecting 2 bytes result code
+		out, result = self._socket_read_n(2)
+		if result == 2:
+			res0 = ord(out[0]) << 8
+			res1 = ord(out[1])
+			result_code = res0 | res1
+			
+			# now we are expecting 4 bytes with the result length
+			out, result = self._socket_read_n(4)
+			if result == 4:
+				b0 = ord(out[0]) << 24
+				b1 = ord(out[1]) << 16
+				b2 = ord(out[2]) << 8
+				b3 = ord(out[3])
+				result_length = b0 | b1 | b2 | b3
+		
+				output_string, _ = self._socket_read_n(result_length)
+		self._close()
+		
+		return output_string 
+
 	def get_version(self):
 		return self._send_command(self.cmd_get_version)
 
@@ -204,46 +235,19 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_target_url)
 
 	def get_spectrum(self):
-		if self.sock is None:
-			self.sock = self._connect_or_abort(ip_address, port)
-
-		msg = self._build_command(self.cmd_get_spectrum, self.channel)
-
-		self._socket_write_all(msg)
-
-		# we are expecting 2 bytes result code
-		out, result = self.socket_read_n(2)
-		res0 = ord(out[0]) << 8
-		res1 = ord(out[1])
-		result_code = res0 | res1
-	
-		# now we are expecting 4 bytes with the result length
-		out, result = self.socket_read_n(4)
-		b0 = ord(out[0]) << 24
-		b1 = ord(out[1]) << 16
-		b2 = ord(out[2]) << 8
-		b3 = ord(out[3])
-		result_length = b0 | b1 | b2 | b3
-	
-		spectrum_string, _ = self.socket_read_n(result_length)
-		self._close()
-		
-		return spectrum_string
+		return self._send_command_n(self.cmd_get_spectrum, self.channel)
 
 	def get_wavelengths(self):
-		# FIXME: process header
-		return self._send_command(self.cmd_get_wavelengths, self.channel)
+		return self._send_command_n(self.cmd_get_wavelengths, self.channel)
 
 	def get_name(self):
 		return self._send_command(self.cmd_get_name, self.channel)
 
 	def get_calibration_buffer(self):
-		# FIXME: process header
-		return self._send_command(self.cmd_get_calibration_coefficients_from_buffer, self.channel)
+		return self._send_command_n(self.cmd_get_calibration_coefficients_from_buffer, self.channel)
 
 	def get_calibration_eeprom(self):
-		# FIXME: process header
-		return self._send_command(self.cmd_get_calibration_coefficients_from_eeprom, self.channel)
+		return self._send_command_n(self.cmd_get_calibration_coefficients_from_eeprom, self.channel)
 
 	def get_binning(self):
 		return self._send_command(self.cmd_get_pixel_binning_factor, self.channel)
@@ -266,8 +270,8 @@ class Spectrometer(object):
 	def get_current_status(self):
 		return self._send_command(self.cmd_get_current_status, self.channel)
 
-	def get_current_spectrum(self):
-		return self._send_command(self.cmd_get_current_spectrum)
+	def current_spectrum(self):
+		return self._send_command_n(self.cmd_get_current_spectrum)
 
 	def get_max_acquisitions(self):
 		return self._send_command(self.cmd_get_max_acquisitions, self.channel)
@@ -307,3 +311,4 @@ if __name__ == '__main__':
 	print('Version:', spectrometer.get_version())
 	print('Serial:', spectrometer.get_serial())
 	print('Integration time:', spectrometer.get_integration())
+	print('Spectrum:', spectrometer.get_spectrum())
