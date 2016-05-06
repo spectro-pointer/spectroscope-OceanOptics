@@ -5,7 +5,7 @@ function settarget($url) {
 
 	$socket = connect_or_abort($ip_address, $port);
 
-    	$msg = $cmd_set_target_url . string+_length_bytes($url);
+    	$msg = $cmd_set_target_url . string_length_bytes($url);
     	$msg = $msg . $url;
 
     	socket_write_all($socket, $msg);
