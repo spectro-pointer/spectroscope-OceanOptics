@@ -282,7 +282,7 @@ class Spectrometer(object):
 	def get_save_mode(self):
 		return self._send_command(self.cmd_get_file_save_mode, self.channel)
 
-	def get_file_prefix(self):
+	def get_prefix(self):
 		return self._send_command(self.cmd_get_file_prefix, self.channel)
 
 	def get_sequence_type(self):
@@ -382,9 +382,15 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_stop_sequence, self.channel)
 
 if __name__ == '__main__':
+	integration_time = 5 # [seconds]
+	location = '/home/pi/spectrometer/spectrums/'
+	prefix = 'spectrum'
+	
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
 	print('Serial:', spectrometer.get_serial())
-	print('Spectrum:', spectrometer.get_spectrum())
-	print('Set integration time 1 second:', spectrometer.set_integration(1e6))
-	print('Integration time [µs]:', spectrometer.get_integration())
+	print('Integration time %d seconds:', spectrometer.set_integration(integration_time*1e6))
+	print('Save location:', spectrometer.set_save_location(location))
+	print('File prefix:', spectrometer.set_prefix(prefix))
+	
+	print('Start Sequence:', spectrometer.start_sequence())
