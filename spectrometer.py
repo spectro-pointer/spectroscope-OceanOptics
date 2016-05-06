@@ -23,7 +23,7 @@ __version__ = '0.5'
 
 import socket
 from sys import exit
-from time import sleep
+#from time import sleep
 import struct
 
 # server address
@@ -134,7 +134,7 @@ class Spectrometer(object):
 		out = True
 		while (out):
 			out = self.sock.recv(2048) 
-			response_string += str(out, 'utf')
+			response_string += str(out, 'iso8859-1')
 		return response_string
 
 	def _socket_read_n(self, expected_length):
@@ -143,7 +143,7 @@ class Spectrometer(object):
 		chunk = True
 		while (chunk):
 			chunk = self.sock.recv(remaining)
-			out = str(chunk, 'utf') 
+			out = str(chunk, 'iso8859-1') 
 			response_string += out
 			remaining -= len(out)
 		return response_string, expected_length - remaining
@@ -158,7 +158,7 @@ class Spectrometer(object):
 		self.sock = None
 	
 	def _build_command(self, cmd, *args):
-		msg = bytearray(cmd, 'utf')
+		msg = bytearray(cmd, 'iso8859-1')
 		arguments = ''
 		if len(args):
 			for i, a in enumerate(args):
@@ -168,7 +168,7 @@ class Spectrometer(object):
 			msg += struct.pack('!H', len(arguments));
 		else:
 			arguments = self.no_parameters
-		msg += bytearray(arguments, 'utf');
+		msg += bytearray(arguments, 'iso8859-1');
 		return msg
 	
 	def _send_command(self, cmd, *args):
@@ -382,7 +382,7 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_stop_sequence, self.channel)
 
 if __name__ == '__main__':
-	integration_time = 5 # [seconds]
+	integration_time = 1 # [seconds]
 	location = '/home/pi/spectrometer/spectrums'
 	prefix = 'spectrum'
 	file = 'spectrum0001.txt'
@@ -402,6 +402,10 @@ if __name__ == '__main__':
 #	sleep(integration_time+1)
 #	print('Stop Sequence:', spectrometer.stop_sequence())
 
-	print('Saving spectrum...',)
-	spectrometer.save_spectrum(location + '/' + file)
-	print('done.\nCurrent status:',  spectrometer.get_current_status())
+#	print('Saving spectrum...',)
+#	spectrometer.save_spectrum(location + '/' + file)
+	print('Getting spectrum...',)
+	print('Spectrum:')
+	print(spectrometer.get_spectrum())
+	print()
+	print('done.\nCurrent status:', spectrometer.get_current_status())
