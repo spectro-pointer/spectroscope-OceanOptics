@@ -19,7 +19,7 @@
     along with Pointer.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-__version__ = '0.2'
+__version__ = '0.5'
 
 import socket
 from sys import exit
