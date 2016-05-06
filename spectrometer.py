@@ -23,11 +23,11 @@ __version__ = '0.5'
 
 import socket
 from sys import exit
-#from time import sleep
+from time import sleep
 import struct
 
 # server address
-ip_address = "192.168.2.205"
+ip_address = '127.0.0.1'
 port = 1865
 
 class Spectrometer(object):
@@ -383,14 +383,25 @@ class Spectrometer(object):
 
 if __name__ == '__main__':
 	integration_time = 5 # [seconds]
-	location = '/home/pi/spectrometer/spectrums/'
+	location = '/home/pi/spectrometer/spectrums'
 	prefix = 'spectrum'
+	file = 'spectrum0001.txt'
 	
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
 	print('Serial:', spectrometer.get_serial())
-	print('Integration time %d seconds:', spectrometer.set_integration(integration_time*1e6))
-	print('Save location:', spectrometer.set_save_location(location))
-	print('File prefix:', spectrometer.set_prefix(prefix))
+	spectrometer.set_integration(integration_time*1e6)
+	print('Integration time: %s µs' % spectrometer.get_integration())
+
+#	spectrometer.set_save_location(location)
+#	print('Save location:', spectrometer.get_save_location())
+#	spectrometer.set_prefix(prefix)
+#	print('File prefix:', spectrometer.get_prefix())
 	
-	print('Start Sequence:', spectrometer.start_sequence())
+#	print('Start Sequence:', spectrometer.start_sequence())
+#	sleep(integration_time+1)
+#	print('Stop Sequence:', spectrometer.stop_sequence())
+
+	print('Saving spectrum...',)
+	spectrometer.save_spectrum(location + '/' + file)
+	print('done.\nCurrent status:',  spectrometer.get_current_status())
