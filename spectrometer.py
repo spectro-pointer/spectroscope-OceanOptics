@@ -163,7 +163,7 @@ class Spectrometer(object):
 		if len(args):
 			for i, a in enumerate(args):
 				arguments += str(a)
-				if i < len(args)-1:
+				if len(args) == 1 or i < len(args)-1:
 					arguments += ';'
 			msg += struct.pack('!H', len(arguments));
 		else:
@@ -185,7 +185,7 @@ class Spectrometer(object):
 		code = 0
 		if len(result) >= 2:
 			code, result = self._extract_result_code_from_response(result)
-		return result if code == 1 else None # FIXME?: what are valid code values?
+		return code if len(result) == 2 else result if code == 1 else None # FIXME?: what are valid code values?
 
 	def _send_command_n(self, cmd, *args):
 		if self.sock is None:
@@ -198,6 +198,7 @@ class Spectrometer(object):
 		output_string = None
 
 		# we are expecting 2 bytes result code
+		result_code = 0
 		out, result = self._socket_read_n(2)
 		if result == 2:
 			res0 = ord(out[0]) << 8
@@ -216,7 +217,7 @@ class Spectrometer(object):
 				output_string, _ = self._socket_read_n(result_length)
 		self._close()
 		
-		return output_string 
+		return output_string, result_code
 
 	def get_version(self):
 		return self._send_command(self.cmd_get_version)
@@ -237,19 +238,19 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_target_url)
 
 	def get_spectrum(self):
-		return self._send_command_n(self.cmd_get_spectrum, self.channel)
+		return self._send_command_n(self.cmd_get_spectrum, self.channel)[0]
 
 	def get_wavelengths(self):
-		return self._send_command_n(self.cmd_get_wavelengths, self.channel)
+		return self._send_command_n(self.cmd_get_wavelengths, self.channel)[0]
 
 	def get_name(self):
 		return self._send_command(self.cmd_get_name, self.channel)
 
 	def get_calibration_buffer(self):
-		return self._send_command_n(self.cmd_get_calibration_coefficients_from_buffer, self.channel)
+		return self._send_command_n(self.cmd_get_calibration_coefficients_from_buffer, self.channel)[0]
 
 	def get_calibration_eeprom(self):
-		return self._send_command_n(self.cmd_get_calibration_coefficients_from_eeprom, self.channel)
+		return self._send_command_n(self.cmd_get_calibration_coefficients_from_eeprom, self.channel)[0]
 
 	def get_binning(self):
 		return self._send_command(self.cmd_get_pixel_binning_factor, self.channel)
@@ -273,7 +274,7 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_current_status, self.channel)
 
 	def current_spectrum(self):
-		return self._send_command_n(self.cmd_get_current_spectrum)
+		return self._send_command_n(self.cmd_get_current_spectrum)[0]
 
 	def get_max_acquisitions(self):
 		return self._send_command(self.cmd_get_max_acquisitions, self.channel)
@@ -307,6 +308,78 @@ class Spectrometer(object):
 
 	def set_integration(self, microseconds):
 		return self._send_command(self.cmd_set_integration_time, self.channel, int(microseconds))
+
+	def set_boxcar(self, width):
+		return self._send_command(self.cmd_set_boxcar_width, self.channel, width)
+
+	def set_average(self, scans):
+		return self._send_command(self.cmd_set_scans_to_average, self.channel, scans)
+		
+	def set_target(self, url):
+		return self._send_command(self.cmd_set_target_url, url)
+	
+	def set_calibration_buffer(self, calibration):
+		return self._send_command_n(self.cmd_set_calibration_coefficients_to_buffer,
+								self.channel, self.calibration)[1]
+	
+	def set_calibration_eeprom(self, calibration):
+		return self._send_command_n(self.cmd_set_calibration_coefficients_to_eeprom,
+								self.channel, self.calibration)[1]
+	
+	def set_binning(self, bins):	
+		return self._send_command(self.cmd_set_pixel_binning_factor,
+								self.channel, bins)
+	
+	def set_e_d_correct(self, electric):
+		return self._send_command(self.cmd_set_electric_dark_correction, self.channel, electric)
+	
+	def set_tec_enable(self, enable):
+		return self._send_command(self.cmd_set_tec_enable, self.channel, enable)
+	
+	def set_tec_temperature(self, temperature):
+		return self._send_command(self.cmd_set_tec_temperature, self.channel, temperature)
+	
+	def set_lamp_enable(self, enable):
+		return self._send_command(self.cmd_set_lamp_enable, self.channel, enable)
+	
+	def set_max_acquisitions(self, acquisitions):
+		return self._send_command(self.cmd_set_max_acquisitions, self.channel, acquisitions)
+	
+	def set_save_mode(self, mode):
+		return self._send_command(self.cmd_set_file_save_mode, self.channel, mode)
+	
+	def set_prefix(self, prefix):
+		return self._send_command(self.cmd_set_file_prefix, self.channel, prefix)
+	
+	def set_sequence_type(self, t):
+		return self._send_command(self.cmd_set_sequence_type, self.channel, t)
+	
+	def set_sequence_interval(self, interval):
+		return self._send_command(self.cmd_set_sequence_interval, self.channel, interval)
+	
+	def set_save_location(self, location):
+		return self._send_command(self.cmd_set_save_directory, self.channel, location)
+	
+	def set_scope_mode(self, mode):
+		return self._send_command(self.cmd_set_scope_mode, self.channel, mode)
+	
+	def set_scope_interval(self, interval):
+		return self._send_command(self.cmd_set_scope_interval, self.channel, interval)
+	
+	def save_spectrum(self, location):
+		return self._send_command(self.cmd_save_spectrum, self.channel, location)
+	
+	def start_sequence(self):
+		return self._send_command(self.cmd_start_sequence, self.channel)
+	
+	def pause_sequence(self): 	
+		return self._send_command(self.cmd_pause_sequence, self.channel)
+	
+	def resume_sequence(self):
+		return self._send_command(self.cmd_resume_sequence, self.channel)
+	
+	def stop_sequence(self):
+		return self._send_command(self.cmd_stop_sequence, self.channel)
 
 if __name__ == '__main__':
 	spectrometer = Spectrometer(ip_address, port)
