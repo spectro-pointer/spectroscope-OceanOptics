@@ -225,6 +225,9 @@ class Spectrometer(object):
 	def get_serial(self):
 		return self._send_command(self.cmd_get_serial_number, self.channel)
 
+	def get_current_status(self):
+		return self._send_command(self.cmd_get_current_status, self.channel)
+
 	def get_integration(self):
 		return self._send_command(self.cmd_get_integration_time, self.channel)
 	
@@ -269,9 +272,6 @@ class Spectrometer(object):
 
 	def get_tec_temperature(self):
 		return self._send_command(self.cmd_get_tec_temperature, self.channel)
-
-	def get_current_status(self):
-		return self._send_command(self.cmd_get_current_status, self.channel)
 
 	def current_spectrum(self):
 		return self._send_command_n(self.cmd_get_current_spectrum)[0]
