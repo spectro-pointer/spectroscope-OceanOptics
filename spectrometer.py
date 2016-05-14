@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Pointer.  If not, see <http://www.gnu.org/licenses/>.
+    along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 __version__ = '0.5'
@@ -24,6 +24,8 @@ __version__ = '0.5'
 import socket
 from sys import exit
 #from time import sleep
+from datetime import datetime
+import os.path
 import struct
 
 # server address
@@ -384,8 +386,7 @@ class Spectrometer(object):
 if __name__ == '__main__':
 	integration_time = 1 # [seconds]
 	location = '/home/pi/spectrometer/spectrums'
-	prefix = 'spectrum'
-	file = 'spectrum0001.txt'
+#	prefix = 'spectrum'
 	
 	spectrometer = Spectrometer(ip_address, port)
 	print('Version:', spectrometer.get_version())
@@ -402,10 +403,11 @@ if __name__ == '__main__':
 #	sleep(integration_time+1)
 #	print('Stop Sequence:', spectrometer.stop_sequence())
 
-#	print('Saving spectrum...',)
-#	spectrometer.save_spectrum(location + '/' + file)
-	print('Getting spectrum...',)
-	print('Spectrum:')
-	print(spectrometer.get_spectrum())
-	print()
+	file = os.path.join(location, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
+	print('Saving spectrum:', file)
+	spectrometer.save_spectrum(file)
+#	print('Getting spectrum...',)
+#	print('Spectrum:')
+#	print(spectrometer.get_spectrum())
+#	print()
 	print('done.\nCurrent status:', spectrometer.get_current_status())
