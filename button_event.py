@@ -6,6 +6,9 @@ from detector import Detector
 ip = '192.168.2.154'
 det = Detector(ip)
 
+location = '/home/pi/spectrometer/spectrums'
+det.location = location
+
 # Use the Broadcom SOC Pin numbers
 # Setup the Pin with Internal pullups enabled and PIN in reading mode.
 GPIO.setmode(GPIO.BCM)
