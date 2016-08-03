@@ -95,7 +95,7 @@ class Spectrometer(object):
 
 	def __init__(self, ip_address, port=port, channel=0):
 		# connect timeout
-		self.timeout = 10
+		self.timeout = 15
 		# default refresh interval for scope mode
 		self.default_scope_interval = 5
 		
@@ -385,7 +385,7 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_stop_sequence, self.channel)
 
 if __name__ == '__main__':
-	integration_time = 4 # [seconds]
+	integration_time = 1 # [seconds]
 	location = '/home/pi/spectrometer/spectrums'
 #	prefix = 'spectrum'
 	
@@ -395,6 +395,7 @@ if __name__ == '__main__':
 	spectrometer.set_integration(integration_time*1e6)
 	print('Integration time: %s µs' % spectrometer.get_integration())
 
+	# 1) start/stop sequence
 #	spectrometer.set_save_location(location)
 #	print('Save location:', spectrometer.get_save_location())
 #	spectrometer.set_prefix(prefix)
@@ -404,23 +405,14 @@ if __name__ == '__main__':
 #	sleep(integration_time+1)
 #	print('Stop Sequence:', spectrometer.stop_sequence())
 
+	# 2) save_spectrum
 	file = os.path.join(location, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
 	print('Saving spectrum:', file)
 	spectrometer.save_spectrum(file)
-#	I add a new line in the file -> the serial number of the spectro pointer
-	file=file+'\".txt\"'
-	fileR = open(file)
-	text = fileR.read()
-	fileR.close()
- 
-	textInsert = spectrometer.get_serial()
- 
-	fileW = open(file, "w")
-	fileW.write(textInsert +"\n"+ text)
- 
-	fileW.close()
-#	print('Getting spectrum...',) '%s.'
+	# 3) get_spectrum
+#	print('Getting spectrum...')
 #	print('Spectrum:')
-#	print(spectrometer.get_spectrum())
-#	print()
+#	spectrum = spectrometer.get_spectrum()
+#	spectrum = [v for v in spectrum.split()]
+
 	print('done.\nCurrent status:', spectrometer.get_current_status())
