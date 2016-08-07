@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import RPi.GPIO as GPIO, time, os, subprocess
 
 from detector import Detector
@@ -20,12 +20,12 @@ GPIO.setup(gpio_stop , GPIO.IN, pull_up_down = GPIO.PUD_UP)
 # Our function on what to do when the button is pressed
 def Start(channel):
 #	subprocess.call(['spectrometer.py'])
-    print "start"
+    print("start")
     det.start()
 
 def Stop(channel):
 #	subprocess.call(['spectrometer.py'])
-    print "stop"
+    print("stop")
     det.stop()
 
 # Add our function to execute when the button pressed event happens
