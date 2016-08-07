@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 import os
 import threading
 from datetime import datetime
-from pylab import *
 from spectrometer import Spectrometer
 
 class Thread(threading.Thread):
@@ -37,17 +36,17 @@ class Detector(Thread):
         
         self._spectrometer = Spectrometer(ip, port)
         self.SERIAL = self._spectrometer.get_serial()
-#        print 'Serial:', self.SERIAL 
-#        print 'Version:', self.spectrometer.get_version() 
+#        print('Serial:', self.SERIAL)
+#        print('Version:', self.spectrometer.get_version())
         self.DEFAULT_LOCATION     = self._spectrometer.get_save_location()
-        print 'Save location:', self.DEFAULT_LOCATION 
+        print('Save location:', self.DEFAULT_LOCATION)
 
         self.MIN_INTEGRATION_TIME = float(self._spectrometer.get_min_integration())/1e6
 #        self.MAX_INTEGRATION_TIME = float(self._spectrometer.get_max_integration())/1e6
-        print 'Max integration time:', self.MAX_INTEGRATION_TIME
+        print('Max integration time:', self.MAX_INTEGRATION_TIME)
         
         self.MAX_INTENSITY        = int(self._spectrometer.get_max_intensity())
-        print 'Max intensity:', self.MAX_INTENSITY
+        print('Max intensity:', self.MAX_INTENSITY)
 
         self._location          = self.DEFAULT_LOCATION
 
@@ -136,24 +135,14 @@ class Detector(Thread):
             Wavelengths Intensities
         '''
         f = os.path.join(path, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
-        print "Saving in '%s'" % f 
+        print("Saving in '%s'" % f)
         with open(f, 'w') as dst:
-            print >>dst, 'Serial Number:', self.SERIAL
-            print >>dst, 'Integration time: %d' % (self._integration_time*1e6)
-            print >>dst, 'Wavelength Intensities'
+            print('Serial Number:', self.SERIAL, file=dst)
+            print('Integration time: %d' % (self._integration_time*1e6), file=dst)
+            print('Wavelength Intensities', file=dst)
             for i, s in enumerate(spectrum):
-                print '%s	%.8f' % (self._wavelengths[i], s)
-
-    def _plot_spectrum(self, intensities):
-        subplot(2,1,1)
-        wavelengths=self.wavelengths
-        n = len(wavelengths)
-        X = wavelengths
-        Y = intensities
-        plot(X, Y, color='blue', alpha=1.00)
-        xlim(300, 1000)
-        show()
-
+                print('%s	%.8f' % (self._wavelengths[i], s), file=dst)
+                
     def shutdown(self):
         Thread.shutdown(self)
 
@@ -181,7 +170,7 @@ class Detector(Thread):
                 # processing
                 spectrum = self._spectrometer.get_spectrum()
                 if spectrum is None:
-                    print 'Warning: no spectrum'
+                    print('Warning: no spectrum')
                     continue
                 spectrum = [int(v) for v in spectrum.split()]
                 MIN = min(spectrum)
@@ -190,7 +179,7 @@ class Detector(Thread):
                 MAX = max(spectrum)
                 if MAX >= self._saturation:
                     self._integration_time *= self._integration_factor
-                    print 'Saturation: %d. Lowering integration time: %f' % (MAX, self._integration_time)
+                    print('Saturation: %d. Lowering integration time: %f' % (MAX, self._integration_time))
                     self._spectrometer.set_integration(self._integration_time*1e6)
                     continue
                 # Baseline reduction
@@ -199,18 +188,17 @@ class Detector(Thread):
                 MAX -= MIN
                 if MAX > self._threshold: # Detection
                     # Save spectrum
-                    print 'Detection: %d' % MAX
+                    print('Detection: %d' % MAX)
                     self._save_spectrum(self._location, spectrum)
-                    self._plot_spectrum(spectrum)
                 else:
                     # Increase integration time
                     self._integration_time /= self._integration_factor
                     if self._integration_time > self.MAX_INTEGRATION_TIME:
                         self._integration_time = self.MAX_INTEGRATION_TIME
-                    print 'No detection: %d. Integration time: %f' % (MAX, self._integration_time)
+                    print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
                     self._spectrometer.set_integration(self._integration_time*1e6)
                     continue
-    #    print 'done.\nCurrent status:', spectrometer.get_current_status()
+    #    print('done.\nCurrent status:', spectrometer.get_current_status())
 
 if __name__ == '__main__':
     from time import sleep
@@ -225,7 +213,7 @@ if __name__ == '__main__':
     detector.location = location
     
 #    detector.integration_time = integration_time
-    print 'Integration time: %s s' % detector.integration_time
+    print('Integration time: %s s' % detector.integration_time)
 
     detector.start()
     

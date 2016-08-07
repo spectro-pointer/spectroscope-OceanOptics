@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """
 	OceanOptics Spectrometer python client
@@ -136,7 +136,7 @@ class Spectrometer(object):
 		out = True
 		while (out):
 			out = self.sock.recv(2048) 
-			response_string += str(out)#, 'iso8859-1')
+			response_string += str(out, 'iso8859-1')
 		return response_string
 
 	def _socket_read_n(self, expected_length):
@@ -145,7 +145,7 @@ class Spectrometer(object):
 		chunk = True
 		while (chunk):
 			chunk = self.sock.recv(remaining)
-			out = str(chunk)#, 'iso8859-1') 
+			out = str(chunk, 'iso8859-1') 
 			response_string += out
 			remaining -= len(out)
 		return response_string, expected_length - remaining
