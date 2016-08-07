@@ -147,10 +147,14 @@ class Detector(Thread):
         Thread.shutdown(self)
 
     def start(self):
-        self.started = True
+        with self.cv:
+            self.started = True
+            self.cv.notifyAll()
 
     def stop(self):
-        self.started = False
+        with self.cv:
+            self.started = False
+            self.cv.notifyAll()
         
     def run(self):
         while self.shallStop is False:
@@ -199,7 +203,7 @@ class Detector(Thread):
 if __name__ == '__main__':
     from time import sleep
     # server address
-    ip_address = '192.168.2.154'
+    ip_address = 'localhost'
 #    port = 1865
 #    integration_time = 1. # [seconds]
 #    max_integration_time = 5.
