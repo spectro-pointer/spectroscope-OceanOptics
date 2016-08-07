@@ -3,7 +3,7 @@
 
 import os
 import threading
-from datetime import datetime
+import datetime
 from pylab import *
 from spectrometer import Spectrometer
 
@@ -135,18 +135,18 @@ class Detector(Thread):
             Integration time: 1000000
             Wavelengths Intensities
         '''
-        f = os.path.join(path, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
+        f = os.path.join(path, '%s.txt' % datetime.datetime.strftime(datetime.datetime.now(), '%d-%m-%Y_%H:%M:%S'))
         print "Saving in '%s'" % f 
         with open(f, 'w') as dst:
             print >>dst, 'Serial Number:', self.SERIAL
             print >>dst, 'Integration time: %d' % (self._integration_time*1e6)
             print >>dst, 'Wavelength Intensities'
             for i, s in enumerate(spectrum):
-                print '%s	%.8f' % (self._wavelengths[i], s)
+                print >>dst, '%s	%.8f' % (self._wavelengths[i], s)
 
     def _plot_spectrum(self, intensities):
         subplot(2,1,1)
-        wavelengths=self.wavelengths
+        wavelengths=self._wavelengths
         n = len(wavelengths)
         X = wavelengths
         Y = intensities
@@ -201,7 +201,7 @@ class Detector(Thread):
                     # Save spectrum
                     print 'Detection: %d' % MAX
                     self._save_spectrum(self._location, spectrum)
-                    self._plot_spectrum(spectrum)
+#                    self._plot_spectrum(spectrum)
                 else:
                     # Increase integration time
                     self._integration_time /= self._integration_factor
