@@ -4,7 +4,7 @@
 import os
 import threading
 from datetime import datetime
-from spectrometer import Spectrometer
+from spectrometer3 import Spectrometer
 
 class Thread(threading.Thread):
     """A stoppable subclass of threading.Thread"""
