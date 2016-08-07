@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO, time, os, subprocess
 
 from detector import Detector
 
-ip = '192.168.2.154'
+ip = 'localhost'
 det = Detector(ip)
 
 location = '/home/pi/spectrometer/spectrums'
