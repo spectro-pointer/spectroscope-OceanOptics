@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import time
 import os
 import threading
 import datetime
 from pylab import *
 from spectrometer import Spectrometer
+import matplotlib.pyplot as plt
 
 class Thread(threading.Thread):
     """A stoppable subclass of threading.Thread"""
@@ -27,7 +29,7 @@ class Thread(threading.Thread):
 class Detector(Thread):
     DEFAULT_INTEGRATION_TIME    = 1.    # [seconds]
     DEFAULT_INTEGRATION_FACTOR  = 1./2  # For increasing/decreasing integration time
-    DEFAULT_THRESHOLD           = 2000  # Over baseline
+    DEFAULT_THRESHOLD           = 3000  # Over baseline
 
     MAX_INTEGRATION_TIME        = 10.
     
@@ -145,15 +147,18 @@ class Detector(Thread):
                 print >>dst, '%s	%.8f' % (self._wavelengths[i], s)
 
     def _plot_spectrum(self, intensities):
-        subplot(2,1,1)
+        fig = plt.figure()
+        ax= fig.add_subplot(2,1,1)
         wavelengths=self._wavelengths
         n = len(wavelengths)
         X = wavelengths
         Y = intensities
-        plot(X, Y, color='blue', alpha=1.00)
+        
+        ax.plot(X, Y, color='blue', alpha=1.00)
         xlim(300, 1000)
-        show()
-
+        fig.show()
+        return fig
+        
     def shutdown(self):
         Thread.shutdown(self)
 
@@ -168,6 +173,7 @@ class Detector(Thread):
             self.cv.notifyAll()
         
     def run(self):
+        fig = 0
         while self.shallStop is False:
             with self.cv:
                 while self.started is False:
@@ -185,7 +191,7 @@ class Detector(Thread):
                     continue
                 spectrum = [int(v) for v in spectrum.split()]
                 MIN = min(spectrum)
-        #        MEAN = sum(spectrum)/len(spectrum)
+        #       MEAN = sum(spectrum)/len(spectrum)
                 # Saturation detection
                 MAX = max(spectrum)
                 if MAX >= self._saturation:
@@ -201,7 +207,9 @@ class Detector(Thread):
                     # Save spectrum
                     print 'Detection: %d' % MAX
                     self._save_spectrum(self._location, spectrum)
-#                    self._plot_spectrum(spectrum)
+                    if(fig != 0):
+                        close()
+                    fig = self._plot_spectrum(spectrum)
                 else:
                     # Increase integration time
                     self._integration_time /= self._integration_factor

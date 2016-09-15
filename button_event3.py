@@ -12,8 +12,8 @@ det.location = location
 # Use the Broadcom SOC Pin numbers
 # Setup the Pin with Internal pullups enabled and PIN in reading mode.
 GPIO.setmode(GPIO.BCM)
-gpio_start = 14
-gpio_stop  = 15
+gpio_start = 17
+gpio_stop  = 18
 GPIO.setup(gpio_start, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(gpio_stop , GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
