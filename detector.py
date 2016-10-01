@@ -147,6 +147,7 @@ class Detector(Thread):
                 print >>dst, '%s	%.8f' % (self._wavelengths[i], s)
 
     def _plot_spectrum(self, intensities):
+        
         fig = plt.figure()
         ax= fig.add_subplot(2,1,1)
         wavelengths=self._wavelengths
