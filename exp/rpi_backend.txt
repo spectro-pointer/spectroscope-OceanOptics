@@ -1,0 +1,30 @@
+Below is the result of running test_matplotlib_backends on RPi2
+
+
+
+
+python2 test_matplotlib_backends.py
+supported backends:     ['macosx', 'agg', 'gdk', 'template', 'gtk', 'qtagg', 'fl                                                                                                                                                             tkagg', 'qt4agg', 'gtkagg', 'qt', 'wx', 'ps', 'cairo', 'tkagg', 'cocoaagg', 'wxagg', 'gtkcairo', 'pdf', 'mixed', 'svg', 'qt4', 'emf']
+valid backends:         ['macosx', 'agg', 'gdk', 'template', 'gtk', 'qtagg', 'fl                                                                                                                                                             tkagg', 'qt4agg', 'gtkagg', 'qt', 'wx', 'ps', 'cairo', 'tkagg', 'cocoaagg', 'wxagg', 'gtkcairo', 'pdf', 'mixed', 'svg', 'qt4', 'emf']
+macosx FPS:     4.08945561303
+agg FPS:        4.08434440188
+gdk FPS:        4.00731142793
+template FPS:   4.08505792899
+gtk FPS:        4.08105232884
+qtagg FPS:      4.09257864023
+fltkagg FPS:    4.07048317845
+qt4agg FPS:     4.04881749674
+gtkagg FPS:     4.1066542412
+qt FPS:         4.07780900949
+wx FPS:         4.05565922114
+ps FPS:         4.04406192316
+cairo FPS:      4.10562289446
+tkagg FPS:      4.04562437128
+cocoaagg FPS:   4.05132273296
+wxagg FPS:      4.05388331941
+gtkcairo FPS:   4.06789635802
+pdf FPS:        4.0879670848
+mixed FPS:      4.05304018841
+svg FPS:        4.07977052147
+qt4 FPS:        4.08055813592
+emf FPS:        4.06591762944
