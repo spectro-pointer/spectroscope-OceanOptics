@@ -7,6 +7,8 @@ import threading
 import datetime
 from pylab import *
 from spectrometer import Spectrometer
+import matplotlib
+matplotlib.use("Qt4Agg") # set the backend
 import matplotlib.pyplot as plt
 
 class Thread(threading.Thread):
@@ -149,6 +151,7 @@ class Detector(Thread):
     def _plot_spectrum(self, intensities):
         
         fig = plt.figure()
+        plt.get_current_fig_manager().window.setGeometry(100,100,200,150)  #only works with QT backends
         ax= fig.add_subplot(2,1,1)
         wavelengths=self._wavelengths
         n = len(wavelengths)
