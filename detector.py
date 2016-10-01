@@ -5,10 +5,17 @@ import time
 import os
 import threading
 import datetime
-from pylab import *
 from spectrometer import Spectrometer
+
 import matplotlib
-matplotlib.use("Tk4Agg") # set the backend
+ # set the backend
+matplotlib.use("TkAgg")
+#matplotlib.use("Qt4Agg")
+matplotlib.rcParams['toolbar'] = 'None'
+#stylefile='misc/rc/probpro'
+#matplotlib.rc_file(os.path.join(os.path.dirname(__file__), stylefile))
+
+from pylab import *
 import matplotlib.pyplot as plt
 
 class Thread(threading.Thread):
@@ -35,7 +42,7 @@ class Detector(Thread):
 
     MAX_INTEGRATION_TIME        = 10.
     
-    WINDOW_POSITION             = [200, 0, 200, 400]  # x,y,width,height
+    WINDOW_POSITION             = [300, 0, 200, 400]  # x,y,width,height
     
     def __init__(self, ip, port=1865):
         Thread.__init__(self)
@@ -156,6 +163,8 @@ class Detector(Thread):
         pos =  "%dx%d+%d+%d" % (self.WINDOW_POSITION[2],self.WINDOW_POSITION[3],self.WINDOW_POSITION[0],self.WINDOW_POSITION[1])  
         plt.get_current_fig_manager().window.wm_geometry(pos) # tk backend
         ax= fig.add_subplot(2,1,1)
+        ax.set_xlabel('Wavelength(nm)')
+        ax.set_ylabel('Amplitude')
         wavelengths=self._wavelengths
         n = len(wavelengths)
         X = wavelengths
