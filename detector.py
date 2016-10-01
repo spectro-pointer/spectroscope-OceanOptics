@@ -8,7 +8,7 @@ import datetime
 from pylab import *
 from spectrometer import Spectrometer
 import matplotlib
-matplotlib.use("Qt4Agg") # set the backend
+matplotlib.use("Tk4Agg") # set the backend
 import matplotlib.pyplot as plt
 
 class Thread(threading.Thread):
@@ -34,6 +34,8 @@ class Detector(Thread):
     DEFAULT_THRESHOLD           = 3000  # Over baseline
 
     MAX_INTEGRATION_TIME        = 10.
+    
+    WINDOW_POSITION             = [200, 0, 200, 400]  # x,y,width,height
     
     def __init__(self, ip, port=1865):
         Thread.__init__(self)
@@ -151,7 +153,8 @@ class Detector(Thread):
     def _plot_spectrum(self, intensities):
         
         fig = plt.figure()
-        plt.get_current_fig_manager().window.setGeometry(100,100,200,150)  #only works with QT backends
+        pos =  "%dx%d+%d+%d" % (self.WINDOW_POSITION[2],self.WINDOW_POSITION[3],self.WINDOW_POSITION[0],self.WINDOW_POSITION[1])  
+        plt.get_current_fig_manager().window.wm_geometry(pos) # tk backend
         ax= fig.add_subplot(2,1,1)
         wavelengths=self._wavelengths
         n = len(wavelengths)
