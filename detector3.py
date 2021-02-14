@@ -26,10 +26,10 @@ class Thread(threading.Thread):
 class Detector(Thread):
     DEFAULT_INTEGRATION_TIME    = 1.    # [seconds]
     DEFAULT_INTEGRATION_FACTOR  = 1./2  # For increasing/decreasing integration time
-    DEFAULT_THRESHOLD           = 2000  # Over baseline
+    DEFAULT_THRESHOLD           = 25000  # Over baseline
 
-    MAX_INTEGRATION_TIME        = 10.
-    
+    MAX_INTEGRATION_TIME        = 60.
+    DEFECTS = (1,)  # defective pixels
     def __init__(self, ip, port=1865):
         Thread.__init__(self)
         self.cv = threading.Condition()
@@ -172,7 +172,9 @@ class Detector(Thread):
                 if spectrum is None:
                     print('Warning: no spectrum')
                     continue
-                spectrum = [int(v) for v in spectrum.split()]
+                spectrum = [float(v) for v in spectrum.split()]
+                for d in self.DEFECTS:
+                    spectrum[1] = 0.
                 MIN = min(spectrum)
         #        MEAN = sum(spectrum)/len(spectrum)
                 # Saturation detection
