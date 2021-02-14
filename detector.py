@@ -38,12 +38,12 @@ class Thread(threading.Thread):
 class Detector(Thread):
     DEFAULT_INTEGRATION_TIME    = 1.    # [seconds]
     DEFAULT_INTEGRATION_FACTOR  = 1./2  # For increasing/decreasing integration time
-    DEFAULT_THRESHOLD           = 3000  # Over baseline
+    DEFAULT_THRESHOLD           = 30000  # Over baseline
 
-    MAX_INTEGRATION_TIME        = 10.
+    MAX_INTEGRATION_TIME        = 60.
     
     WINDOW_POSITION             = [300, 0, 200, 400]  # x,y,width,height
-    
+    DEFECTS = (1,)  # defective pixels
     def __init__(self, ip, port=1865):
         Thread.__init__(self)
         self.cv = threading.Condition()
@@ -162,7 +162,7 @@ class Detector(Thread):
         fig = plt.figure()
         pos =  "%dx%d+%d+%d" % (self.WINDOW_POSITION[2],self.WINDOW_POSITION[3],self.WINDOW_POSITION[0],self.WINDOW_POSITION[1])  
         plt.get_current_fig_manager().window.wm_geometry(pos) # tk backend
-        ax= fig.add_subplot(2,1,1)
+        ax= fig.add_subplot(1,1,1)
         ax.set_xlabel('Wavelength(nm)')
         ax.set_ylabel('Amplitude')
         wavelengths=self._wavelengths
@@ -171,7 +171,7 @@ class Detector(Thread):
         Y = intensities
         
         ax.plot(X, Y, color='blue', alpha=1.00)
-        xlim(300, 1000)
+        xlim(200, 1100)
         fig.show()
         return fig
         
@@ -205,7 +205,9 @@ class Detector(Thread):
                 if spectrum is None:
                     print 'Warning: no spectrum'
                     continue
-                spectrum = [int(v) for v in spectrum.split()]
+                spectrum = [float(v) for v in spectrum.split()]
+                for d in self.DEFECTS:
+                    spectrum[1] = 0.
                 MIN = min(spectrum)
         #       MEAN = sum(spectrum)/len(spectrum)
                 # Saturation detection
