@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block extra_style %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var myChart;
+    var getData = jQuery.get( "/data");
+    getData.done(function(results) {
+        var ctx = document.getElementById('spectrum').getContext('2d');
+        var xAxe = {{data_x}};
+        var yAxe = results.results;
+        // console.log('date_list', date_list);
+        // console.log('measure_list', measure_list);
+        myChart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'line',
+            data: {
+                labels: xAxe,
+                datasets: [{
+                    label: 'Evolution of device measures',
+                    borderColor: 'rgb(0, 0, 0)',
+                    data: yAxe
+                }]
+            },
+            // Configuration options go here
+          options: {}
+        });
+    });
+
+    function addData(chart, label, data) {
+        chart.data.labels = label;
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data = data;
+        });
+        chart.update();
+    }
+
+    function removeData(chart) {
+        chart.data.labels.pop();
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.pop();
+        });
+        chart.update(0);
+    }
+
+    function updateChart(){
+        var updatedData = jQuery.get('/data');
+        /*removeData(myChart);*/
+        updatedData.done(function(results){
+            var xAxe = {{data_x}};
+            var yAxe = results.results;
+            addData(myChart,xAxe,yAxe)
+        });
+    }
+
+    $(document).ready(function () {
+        setInterval(function() {
+            updateChart();
+        }, 2000);
+    });
+
+</script>
+{% endblock %}
+
+
+{% block main_content %}
+<form method='POST' action='/config' enctype='multipart/form-data'>
+    <div class="container-fluid">
+        <div class="row bg-sp text-white shadow py-2 d-flex mb-2">
+        <div class="col-6 mt-0 pt-0 mb-0 pb-0">
+            <h4 class='pl-3'>Spectro-Pointer Configurations</h4>
+        </div>
+        <div class="col-6 mt-0 pt-0 mb-0 pb-0 d-flex flex-row-reverse">
+            <a href="/stream_video" class="btn btn-primary bg-sp border-white" role="button" aria-pressed="true">Video</a>
+        </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-12 col-lg-6 order-sm-1">
+                    <div class="row mt-5 ml-5">
+                    </div>
+                    <div class="row mb-5">
+                        <canvas id="spectrum" width="300" height="130"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-lg-6 order-sm-2">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.use_raspberry.label }}
+                        {{ form.use_raspberry(size=64,class="form-control") }}
+                        {% for error in form.use_raspberry.errors %}
+                        <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.correct_vertical_camera.label }}
+                        {{ form.correct_vertical_camera(size=64, class="form-control") }}
+                        {% for error in form.correct_vertical_camera.errors %}
+                        <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.correct_horizontal_camera.label }}
+                        {{ form.correct_horizontal_camera(size=64,class="form-control") }}
+                        {% for error in form.correct_horizontal_camera.errors %}
+                        <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.center_radius.label }}
+                        {{ form.center_radius(size=64,class="form-control") }}
+                        {% for error in form.center_radius.errors %}
+                        <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mt-2 mb-3">
+                            <button type="button" class="btn btn-primary bg-sp border-white" data-toggle="modal" data-target="#DefaultConfig">
+                                Default Config
+                            </button>
+                        </div>
+
+                        <div class="col-6 mt-2 mb-3 d-flex flex-row-reverse">
+                            <button type="button" class="btn btn-primary bg-sp border-white" data-toggle="modal" data-target="#UpdateConfig">
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="UpdateConfig" tabindex="-1" role="dialog" aria-labelledby="ClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Actualizar</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Estas a punto de actualizar las configuraciones
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary bg-sp border-white">Actualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Modal -->
+<div class="modal fade" id="DefaultConfig" tabindex="-1" role="dialog" aria-labelledby="ClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Default</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Estas a punto de actualizar las configuraciones
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <form method='POST' action='{{ url_for('set_default_config') }}' enctype='multipart/form-data'>
+                    <div class="col-6 mt-2 mb-3">
+                        <button type="submit" class="btn btn-primary bg-sp border-white">
+                            Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

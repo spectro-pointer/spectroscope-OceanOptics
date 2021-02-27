@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block extra_style %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var myChart;
+    var getData = jQuery.get( "/data");
+    getData.done(function(results) {
+        var ctx = document.getElementById('spectrum').getContext('2d');
+        var xAxe = {{data_x}};
+        var yAxe = results.results;
+        // console.log('date_list', date_list);
+        // console.log('measure_list', measure_list);
+        myChart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'line',
+            data: {
+                labels: xAxe,
+                datasets: [{
+                    label: 'Evolution of device measures',
+                    borderColor: 'rgb(0, 0, 0)',
+                    data: yAxe
+                }]
+            },
+            // Configuration options go here
+          options: {}
+        });
+    });
+
+    function addData(chart, label, data) {
+        chart.data.labels = label;
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data = data;
+        });
+        chart.update();
+    }
+
+    function removeData(chart) {
+        chart.data.labels.pop();
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.pop();
+        });
+        chart.update(0);
+    }
+
+    function updateChart(){
+        var updatedData = jQuery.get('/data');
+        /*removeData(myChart);*/
+        updatedData.done(function(results){
+            var xAxe = {{data_x}};
+            var yAxe = results.results;
+            addData(myChart,xAxe,yAxe)
+        });
+    }
+
+    $(document).ready(function () {
+        setInterval(function() {
+            updateChart();
+        }, 2000);
+    });
+
+</script>
+{% endblock %}
+
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row bg-sp text-white shadow py-2 d-flex mb-2">
+        <div class="col-6 mt-0 pt-0 mb-0 pb-0">
+            <h4 class='pl-3'>Spectro-Pointer SpectroScope</h4>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 order-sm-1">
+                <div class="row mb-5">
+                    <canvas id="spectrum" width="300" height="130"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
