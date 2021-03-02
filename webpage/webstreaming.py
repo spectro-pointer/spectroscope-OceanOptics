@@ -29,6 +29,13 @@ def create_app(configfile=None):
         # redirects to config page
         return redirect(url_for('set_config'))
 
+    # This function selects between automatic mode and manual mode into the DB
+    @app.route('/select_mode', methods = ['POST'])
+    def get_post_select_mode_data():
+        select_mode = request.form['select_mode']
+        print("SELECT_MODE",select_mode)
+        return select_mode
+
     @app.route('/data')
     def spectro_data():
         #--------------------------------------------
@@ -36,39 +43,42 @@ def create_app(configfile=None):
         yAxe = load_data.get_wavelengths()
         return jsonify({'results':yAxe})
 
-    @app.route('/spectroscope')
-    def render_large_template():
-        return render_template('spectroscope.html',data_x=data_x_1)
+    @app.route("/save_spectrum", methods=["GET","POST"])
+    def save_spectrum():
+        det._save_picture()
 
-    @app.route("/config", methods=["GET","POST"])
-    def set_config():
+    @app.route("/spectroscope", methods=["GET","POST"])
+    def set_config_spectrometer():
         form = ConfigForm()
 
         if request.method == 'POST':
             if form.validate_on_submit():
-                spectometer_config = {}
-                spectometer_config['use_raspberry']             = form.use_raspberry.data
-                spectometer_config['correct_vertical_camera']   = form.correct_vertical_camera.data
+                # spectro_pointer_config = {}
+                #spectro_pointer_config['use_raspberry']             = form.integration_time.data
+                #spectro_pointer_config['correct_vertical_camera']   = form.integration_factor.data
+                #spectro_pointer_config['correct_horizontal_camera'] = form.threshold.data
+                print("INTEGRATION TIME",form.integration_time.data)
+                print("INTEGRATION FACTOR",form.integration_factor.data)
+                print("THRESHOLD",form.threshold.data)
 
-                with lock:
-                    set_sp_config(app,**spectro_pointer_config)
-                    update_params(app,set_camera_attr_en=True)
+                # with lock:
+                #     set_sp_config(app,**spectro_pointer_config)
+                #     update_params(app,set_camera_attr_en=True)
 
-            return redirect(url_for('set_config'))
+            return redirect(url_for('set_config_spectrometer'))
         else:
-            form.use_raspberry.render_kw                 = {'value':get_sp_config('USE_RASPBERRY',app)}
-            form.correct_vertical_camera.render_kw       = {'value':get_sp_config('CORRECT_VERTICAL_CAMERA',app)}
+            print("INTEGRATION TIME",form.integration_time.data)
+            print("INTEGRATION FACTOR",form.integration_factor.data)
+            print("THRESHOLD",form.threshold.data)
+            form.integration_time.render_kw     = {'value':2000}#get_sp_config('USE_RASPBERRY',app)}
+            form.integration_factor.render_kw   = {'value':2000}#get_sp_config('CORRECT_VERTICAL_CAMERA',app)}
+            form.threshold.render_kw            = {'value':2000}#get_sp_config('CORRECT_HORIZONTAL_CAMERA',app)}
 
-            form.resolution.data                         = get_sp_config('RESOLUTION',app)
-            form.framerate.render_kw                     = {'value':get_sp_config('FRAMERATE',app)}
+            form.integration_time.label         = 'INTEGRATION TIME:'
+            form.integration_factor.label       = 'INTEGRATION FACTOR:'
+            form.threshold.label                = 'THRESHOLD:'
 
-            form.use_raspberry.label                     = 'USE RASPBERRY:'
-            form.correct_vertical_camera.label           = 'CORRECT VERTICAL CAMERA:'
-
-            form.resolution.label                        = 'RESOLUTION:'
-            form.framerate.label                         = 'FRAMERATE:'
-
-        return render_template("config.html",form=form)
+        return render_template("spectroscope.html",data_x=data_x_1,integration_time=form.integration_time.data,form=form)
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
@@ -77,9 +87,9 @@ def create_app(configfile=None):
                 delete_db(app)
                 load_db(app)
                 update_params(app,set_camera_attr_en=True)
-            return redirect(url_for('set_config'))
+            return redirect(url_for('set_config_spectrometer'))
         else:
-            return redirect(url_for('set_config'))
+            return redirect(url_for('set_config_spectrometer'))
     return app
 
 def start_webstreaming():

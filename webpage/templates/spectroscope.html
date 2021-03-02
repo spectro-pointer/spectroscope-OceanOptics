@@ -10,10 +10,7 @@
         var ctx = document.getElementById('spectrum').getContext('2d');
         var xAxe = {{data_x}};
         var yAxe = results.results;
-        // console.log('date_list', date_list);
-        // console.log('measure_list', measure_list);
         myChart = new Chart(ctx, {
-            // The type of chart we want to create
             type: 'line',
             data: {
                 labels: xAxe,
@@ -23,8 +20,24 @@
                     data: yAxe
                 }]
             },
-            // Configuration options go here
-          options: {}
+            options: {
+                scales: {
+                    xAxes: [{
+                                ticks: {
+                                    max: 186,   //TODO Change by jinja variable
+                                    min: 1033,  //TODO Change by jinja variable
+                                    stepSize: 1 //TODO Change by jinja variable
+                                }
+                            }],
+                    yAxes: [{
+                                ticks: {
+                                    max: 70000,     //TODO Change by jinja variable
+                                    min: 0,         //TODO Change by jinja variable
+                                    stepSize: 10000 //TODO Change by jinja variable
+                                }
+                            }],
+              }
+            }
         });
     });
 
@@ -54,16 +67,32 @@
         });
     }
 
+    /*This function selects between automatic mode and manual mode*/
+    function select_mode(mode){
+        jQuery.post('/select_mode', {
+                select_mode: mode
+        });
+    }
+
+    document.getElementById("automatic").addEventListener("click", function() {
+        select_mode("automatic");
+    }, false);
+
+    document.getElementById("manual").addEventListener("click", function() {
+        select_mode("manual");
+    }, false);
+
     $(document).ready(function () {
         setInterval(function() {
             updateChart();
-        }, 2000);
+        }, {{integration_time}});
     });
 
 </script>
 {% endblock %}
 
 
+        </div>
 {% block main_content %}
 <div class="container-fluid">
     <div class="row bg-sp text-white shadow py-2 d-flex mb-2">
@@ -74,9 +103,54 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 order-sm-1">
-                <div class="row mb-5">
-                    <canvas id="spectrum" width="300" height="130"></canvas>
+                <div class="row mb-2">
+                    <canvas id="spectrum" width="300" height="100"></canvas>
                 </div>
+                <form method='POST' action='/spectroscope' enctype='multipart/form-data'>
+                    <div class="col-12 order-sm-1">
+                        <div class="row my-0 d-flex flex-row-reverse">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                              <label class="btn btn-secondary active">
+                                <input type="radio" name="options" id="automatic" autocomplete="off" checked> Automatic</button>
+                              </label>
+                              <label class="btn btn-secondary">
+                                <input type="radio" name="options" id="manual" autocomplete="off" checked> Manual</button>
+                              </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr noshade="noshade" />
+                    <div class="row my-0">
+                        <div class="col-6 order-sm-1">
+                            <div class="form-group">
+                                {{ form.integration_time.label }}
+                                {{ form.integration_time(size=64,class="form-control") }}
+                                {% for error in form.integration_time.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.integration_factor.label }}
+                                {{ form.integration_factor(size=64, class="form-control") }}
+                                {% for error in form.integration_factor.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.threshold.label }}
+                                {{ form.threshold(size=64,class="form-control") }}
+                                {% for error in form.threshold.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-6 order-sm-2">
+                            <div class="row my-0 d-flex flex-row-reverse pr-3">
+                                <button type="submit" class="btn btn-primary bg-sp border-white">Actualizar</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
