@@ -30,11 +30,11 @@ class Detector(Thread):
 
     MAX_INTEGRATION_TIME        = 60.
     DEFECTS = (1,)  # defective pixels
-    def __init__(self, ip, port=1865):
+    def __init__(self, ip, port=1865, debug_mode=True):
         Thread.__init__(self)
         self.cv = threading.Condition()
         
-        self._spectrometer = Spectrometer(ip, port)
+        self._spectrometer = Spectrometer(ip, port, debug_mode=debug_mode)
         self.SERIAL = self._spectrometer.get_serial()
 #        print('Serial:', self.SERIAL)
 #        print('Version:', self.spectrometer.get_version())
@@ -46,7 +46,7 @@ class Detector(Thread):
         print('Max integration time:', self.MAX_INTEGRATION_TIME)
         
         self.MAX_INTENSITY        = int(self._spectrometer.get_max_intensity())
-        print('Max intensity:', self.MAX_INTENSITY)
+        print('Max intensity:', self.MAX_INTENSITY,'\n')
 
         self._location          = self.DEFAULT_LOCATION
 
@@ -135,7 +135,7 @@ class Detector(Thread):
             Wavelengths Intensities
         '''
         f = os.path.join(path, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
-        print("Saving in '%s'" % f)
+        print("Saving in '%s'\n" % f)
         with open(f, 'w') as dst:
             print('Serial Number:', self.SERIAL, file=dst)
             print('Integration time: %d' % (self._integration_time*1e6), file=dst)
@@ -204,22 +204,23 @@ class Detector(Thread):
 
 if __name__ == '__main__':
     from time import sleep
+
     # server address
     ip_address = 'localhost'
 #    port = 1865
 #    integration_time = 1. # [seconds]
 #    max_integration_time = 5.
 
-    detector = Detector(ip_address)
+    detector = Detector(ip_address,debug_mode=True)
     location = '/home/pi/spectrometer/spectrums'
     detector.location = location
     
 #    detector.integration_time = integration_time
-    print('Integration time: %s s' % detector.integration_time)
+    print('Integration time: %s s\n' % detector.integration_time)
 
     detector.start()
     
     while True:
         sleep(1)
-        
+
     detector.stop()
