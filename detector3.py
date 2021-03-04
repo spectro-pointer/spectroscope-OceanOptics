@@ -60,6 +60,8 @@ class Detector(Thread):
         
         self._wavelengths = tuple(w for w in self._spectrometer.get_wavelengths().split())
 
+        self._last_spectrum = []
+
         self.started = False
         
         self.setDaemon(True)
@@ -200,7 +202,14 @@ class Detector(Thread):
                     print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
                     self._spectrometer.set_integration(self._integration_time*1e6)
                     continue
+                self._last_spectrum = spectrum
     #    print('done.\nCurrent status:', spectrometer.get_current_status())
+
+    def get_last_spectrum(self):
+        return self._last_spectrum
+
+    def get_wavelengths(self):
+        return self._wavelengths
 
 if __name__ == '__main__':
     from time import sleep

@@ -1,11 +1,11 @@
-from config import *
+#from config import *
 import sqlite3
 from flask import g
 
-DATABASE = './static/sp_config.db'
+DATABASE = './webpage/static/sp_config.db'
 
 def connect_db():
-    return sqlite3.connect('static/sp_config.db')
+    return sqlite3.connect(DATABASE)
 
 def delete_db(app):
 

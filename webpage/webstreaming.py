@@ -1,5 +1,5 @@
-from utils import *
-from tracker_lib import *
+from .utils import *
+#from tracker_lib import *
 import threading
 import argparse
 from flask import Flask, url_for, jsonify
@@ -7,11 +7,12 @@ from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask import request, redirect
 #from flask_appconfig import AppConfig
-from config import *
-from forms import ConfigForm
+#from config import *
+from .forms import ConfigForm
 from time import sleep
+from detector3 import Detector
 
-def create_app(configfile=None):
+def create_app(det, configfile=None):
     app = Flask(
                 __name__,
                 template_folder="templates",
@@ -27,7 +28,7 @@ def create_app(configfile=None):
     @app.route("/")
     def index():
         # redirects to config page
-        return redirect(url_for('set_config'))
+        return redirect(url_for('set_config_spectrometer'))
 
     # This function selects between automatic mode and manual mode into the DB
     @app.route('/select_mode', methods = ['POST'])
@@ -40,7 +41,7 @@ def create_app(configfile=None):
     def spectro_data():
         #--------------------------------------------
         #TODO Change load_data.get_wavelengths by tuple(w for w in self._spectrometer.get_wavelengths().split())
-        yAxe = load_data.get_wavelengths()
+        yAxe = det.get_last_spectrum() #load_data.get_wavelengths()
         return jsonify({'results':yAxe})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
@@ -78,15 +79,15 @@ def create_app(configfile=None):
             form.integration_factor.label       = 'INTEGRATION FACTOR:'
             form.threshold.label                = 'THRESHOLD:'
 
-        return render_template("spectroscope.html",data_x=data_x_1,integration_time=form.integration_time.data,form=form)
+        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=form.integration_time.data,form=form)
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
         if request.method == 'POST':
-            with lock:
-                delete_db(app)
-                load_db(app)
-                update_params(app,set_camera_attr_en=True)
+            # with lock:
+            #     delete_db(app)
+            #     load_db(app)
+            #     update_params(app,set_camera_attr_en=True)
             return redirect(url_for('set_config_spectrometer'))
         else:
             return redirect(url_for('set_config_spectrometer'))
@@ -100,13 +101,19 @@ def start_webstreaming():
         help="ephemeral port number of the server (1024 to 65535)")
     args = vars(ap.parse_args())
 
+    ip = 'localhost'
+    det = Detector(ip,debug_mode=True)
+    location = '/home/pi/spectrometer/spectrums'
+    det.location = location
+    det.start()
+
     # start the flask app
-    app = create_app()
+    app = create_app(det)
     init_db(app)
 
-    t1 = threading.Thread(target=camera_loop,args=(app,))
-    t1.daemon = True
-    t1.start()
+    # t1 = threading.Thread(target=camera_loop,args=(app,))
+    # t1.daemon = True
+    # t1.start()
 
     app.run(host=args["ip"], port=args["port"], debug=True,
         threaded=True, use_reloader=False)
