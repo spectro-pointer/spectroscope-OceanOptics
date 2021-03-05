@@ -35,18 +35,17 @@ def create_app(det, configfile=None):
     def get_post_select_mode_data():
         select_mode = request.form['select_mode']
         print("SELECT_MODE",select_mode)
+        det.set_operation_mode(select_mode)
         return select_mode
 
     @app.route('/data')
     def spectro_data():
-        #--------------------------------------------
-        #TODO Change load_data.get_wavelengths by tuple(w for w in self._spectrometer.get_wavelengths().split())
-        yAxe = det.get_last_spectrum() #load_data.get_wavelengths()
+        yAxe = det.get_last_spectrum()
         return jsonify({'results':yAxe})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
     def save_spectrum():
-        det._save_picture()
+        det._save_spectrum(det.location,det.get_last_spectrum())
 
     @app.route("/spectroscope", methods=["GET","POST"])
     def set_config_spectrometer():
@@ -79,7 +78,7 @@ def create_app(det, configfile=None):
             form.integration_factor.label       = 'INTEGRATION FACTOR:'
             form.threshold.label                = 'THRESHOLD:'
 
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=form.integration_time.data,form=form)
+        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=int(det.integration_time*1000),form=form)
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
