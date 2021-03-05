@@ -75,20 +75,45 @@
         });
     }
 
+    function save_spectrum(){
+        jQuery.post('/save_spectrum');
+    }
+
+    function disableElement() {
+      document.getElementById("save_spectrum").disabled = true;
+    }
+
+    function enableElement() {
+      document.getElementById("save_spectrum").disabled = false;
+    }
+
     document.getElementById("automatic").addEventListener("click", function() {
+        disableElement();
         select_mode("automatic");
     }, false);
 
     document.getElementById("manual").addEventListener("click", function() {
+        enableElement();
         select_mode("manual");
+    }, false);
+
+    document.getElementById("save_spectrum").addEventListener("click", function() {
+        save_spectrum();
     }, false);
 
     $(document).ready(function () {
         setInterval(function() {
             updateChart();
-            console.log({{integration_time}})
+            //console.log({{integration_time}})
         }, {{integration_time}});
     });
+
+    if ("{{auto_en}}" == "True"){
+        disableElement();
+    }
+    else{
+        enableElement();
+    }
 
 </script>
 {% endblock %}
@@ -113,17 +138,17 @@
                         <div class="row my-0 d-flex flex-row-reverse">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                               <label class="btn btn-secondary bg-sp active">
-                                <input type="radio" name="options" id="automatic" autocomplete="off" checked> Automatic
+                                <input type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
                               </label>
                               <label class="btn btn-secondary bg-sp">
-                                <input type="radio" name="options" id="manual" autocomplete="off"> Manual
+                                <input type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
                               </label>
                             </div>
                         </div>
                     </div>
                     <hr noshade="noshade" />
                     <div class="row my-0">
-                        <div class="col-6 order-sm-1">
+                        <div class="col-sm-12 col-lg-6 order-sm-1">
                             <div class="form-group">
                                 {{ form.integration_time.label }}
                                 {{ form.integration_time(size=64,class="form-control") }}
@@ -146,9 +171,12 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-6 order-sm-2">
+                        <div class="col-sm-12 col-lg-6 order-sm-2">
                             <div class="row my-0 d-flex flex-row-reverse pr-3">
-                                <button type="submit" class="btn btn-primary bg-sp">Actualizar</button>
+                                <button type="submit" class="btn btn-primary bg-sp" style="border-color: #3f8a64;">Actualizar</button>
+                            </div>
+                            <div class="row mt-2 d-flex flex-row-reverse pr-3">
+                                <input type="button" class="btn btn-secondary bg-sp" style="border-color: #3f8a64;" id="save_spectrum" autocomplete="off" value="Save Spectrum">
                             </div>
                         </div>
                     </div>

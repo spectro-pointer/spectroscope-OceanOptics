@@ -11,7 +11,7 @@ from webpage.config import *
 from webpage.forms import ConfigForm
 from time import sleep
 from detector3 import Detector
-
+select_mode = "automatic"
 def create_app(det, configfile=None):
     app = Flask(
                 __name__,
@@ -34,7 +34,7 @@ def create_app(det, configfile=None):
     @app.route('/select_mode', methods = ['POST'])
     def get_post_select_mode_data():
         select_mode = request.form['select_mode']
-        print("SELECT_MODE",select_mode)
+        # print("SELECT_MODE",select_mode)
         det.set_operation_mode(select_mode)
         return select_mode
 
@@ -46,22 +46,24 @@ def create_app(det, configfile=None):
     @app.route("/save_spectrum", methods=["GET","POST"])
     def save_spectrum():
         det._save_spectrum(det.location,det.get_last_spectrum())
+        return "Ok"
 
     @app.route("/spectroscope", methods=["GET","POST"])
     def set_config_spectrometer():
         form = ConfigForm()
 
         if request.method == 'POST':
-            if form.validate_on_submit():
-                spectro_scope_config = {}
-                spectro_scope_config['integration_time']     = form.integration_time.data
-                spectro_scope_config['integration_factor']   = form.integration_factor.data
-                spectro_scope_config['threshold']            = form.threshold.data
-                print("INTEGRATION TIME",form.integration_time.data)
-                print("INTEGRATION FACTOR",form.integration_factor.data)
-                print("THRESHOLD",form.threshold.data)
+            # print("ERROR: ",form.errors)
+            # if form.validate_on_submit():
+            spectro_scope_config = {}
+            spectro_scope_config['integration_time']     = form.integration_time.data
+            spectro_scope_config['integration_factor']   = form.integration_factor.data
+            spectro_scope_config['threshold']            = form.threshold.data
+            # print("INTEGRATION TIME",form.integration_time.data)
+            # print("INTEGRATION FACTOR",form.integration_factor.data)
+            # print("THRESHOLD",form.threshold.data)
 
-                set_spectro_scope(app,**spectro_scope_config)
+            set_spectro_scope(app,**spectro_scope_config)
 
             return redirect(url_for('set_config_spectrometer'))
 
@@ -78,8 +80,8 @@ def create_app(det, configfile=None):
             form.threshold.label                = 'THRESHOLD:'
 
         integration_time                    = get_spectro_scope('integration_time',app)*1000 #Pass integration time to ms
-
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form)
+        # print(det._operation_mode)
+        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det._operation_mode else False))
         #return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=int(det.integration_time*1000),form=form)
 
     @app.route("/default",methods=['GET','POST'])

@@ -5,7 +5,6 @@ from flask import g
 DATABASE = 'webpage/static/spectro_scope.db'
 
 def connect_db():
-    print("CONNECT_DB")
     return sqlite3.connect('webpage/static/spectro_scope.db')
 
 def delete_db(app):
@@ -52,7 +51,6 @@ def init_db(app):
                                                  INTEGRATION_FACTOR real,
                                                  THRESHOLD int
                                                 )''')
-        print("DATABASE CREATED IN "+DATABASE)
         load_db(app)
 
     except sqlite3.OperationalError as e:
@@ -80,7 +78,6 @@ def sql_stat_build(str1,str2,cont,listM,valueSP):
     else:
         str1 += "," + str2
 
-    print("HERE",str1)
     return str1
 
 def set_spectro_scope(app,**spectro_scope_config):
