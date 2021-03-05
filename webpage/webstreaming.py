@@ -1,4 +1,4 @@
-from .utils import *
+from webpage.utils import *
 #from tracker_lib import *
 import threading
 import argparse
@@ -7,8 +7,8 @@ from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask import request, redirect
 #from flask_appconfig import AppConfig
-#from config import *
-from .forms import ConfigForm
+from webpage.config import *
+from webpage.forms import ConfigForm
 from time import sleep
 from detector3 import Detector
 
@@ -54,32 +54,33 @@ def create_app(det, configfile=None):
 
         if request.method == 'POST':
             if form.validate_on_submit():
-                # spectro_pointer_config = {}
-                #spectro_pointer_config['use_raspberry']             = form.integration_time.data
-                #spectro_pointer_config['correct_vertical_camera']   = form.integration_factor.data
-                #spectro_pointer_config['correct_horizontal_camera'] = form.threshold.data
+                spectro_scope_config = {}
+                spectro_scope_config['integration_time']     = form.integration_time.data
+                spectro_scope_config['integration_factor']   = form.integration_factor.data
+                spectro_scope_config['threshold']            = form.threshold.data
                 print("INTEGRATION TIME",form.integration_time.data)
                 print("INTEGRATION FACTOR",form.integration_factor.data)
                 print("THRESHOLD",form.threshold.data)
 
-                # with lock:
-                #     set_sp_config(app,**spectro_pointer_config)
-                #     update_params(app,set_camera_attr_en=True)
+                set_spectro_scope(app,**spectro_scope_config)
 
             return redirect(url_for('set_config_spectrometer'))
+
         else:
-            print("INTEGRATION TIME",form.integration_time.data)
-            print("INTEGRATION FACTOR",form.integration_factor.data)
-            print("THRESHOLD",form.threshold.data)
-            form.integration_time.render_kw     = {'value':2000}#get_sp_config('USE_RASPBERRY',app)}
-            form.integration_factor.render_kw   = {'value':2000}#get_sp_config('CORRECT_VERTICAL_CAMERA',app)}
-            form.threshold.render_kw            = {'value':2000}#get_sp_config('CORRECT_HORIZONTAL_CAMERA',app)}
+            #print("INTEGRATION TIME",form.integration_time.data)
+            #print("INTEGRATION FACTOR",form.integration_factor.data)
+            #print("THRESHOLD",form.threshold.data)
+            form.integration_time.render_kw     = {'value':get_spectro_scope('integration_time',app)}
+            form.integration_factor.render_kw   = {'value':get_spectro_scope('integration_factor',app)}
+            form.threshold.render_kw            = {'value':get_spectro_scope('threshold',app)}
 
             form.integration_time.label         = 'INTEGRATION TIME:'
             form.integration_factor.label       = 'INTEGRATION FACTOR:'
             form.threshold.label                = 'THRESHOLD:'
 
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=form.integration_time.data,form=form)
+        integration_time                    = get_spectro_scope('integration_time',app)*1000 #Pass integration time to ms
+
+        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form)
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
@@ -95,21 +96,29 @@ def create_app(det, configfile=None):
 
 def start_webstreaming():
     ap = argparse.ArgumentParser()
+
     ap.add_argument("-i", "--ip", type=str, required=True,
         help="ip address of the device")
+
     ap.add_argument("-o", "--port", type=int, required=True,
         help="ephemeral port number of the server (1024 to 65535)")
+
+    ap.add_argument("-loc", "--location", type=str, required=True,
+        help="ephemeral port number of the server (1024 to 65535)")
+
+    ap.add_argument("-id","--ip_det", type=str, required=True,
+        help="ip address of the device")
+
     args = vars(ap.parse_args())
 
-    ip = 'localhost'
-    det = Detector(ip,debug_mode=True)
-    location = '/home/pi/spectrometer/spectrums'
-    det.location = location
-    det.start()
-
     # start the flask app
+    det = Detector(args["ip_det"],debug_mode=True)
     app = create_app(det)
     init_db(app)
+
+    det.location = args["location"]
+    det.start()
+
 
     # t1 = threading.Thread(target=camera_loop,args=(app,))
     # t1.daemon = True

@@ -193,7 +193,7 @@ class Detector(Thread):
                 if MAX > self._threshold: # Detection
                     # Save spectrum
                     print('Detection: %d' % MAX)
-                    self._save_spectrum(self._location, spectrum)
+                    #self._save_spectrum(self._location, spectrum)
                 else:
                     # Increase integration time
                     self._integration_time /= self._integration_factor
