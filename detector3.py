@@ -61,6 +61,7 @@ class Detector(Thread):
         self._wavelengths = tuple(w for w in self._spectrometer.get_wavelengths().split())
 
         self._last_spectrum = []
+        self._operation_mode = 'automatic'
 
         self.started = False
         
@@ -181,7 +182,7 @@ class Detector(Thread):
         #        MEAN = sum(spectrum)/len(spectrum)
                 # Saturation detection
                 MAX = max(spectrum)
-                if MAX >= self._saturation:
+                if MAX >= self._saturation and self._operation_mode=='automatic':
                     self._integration_time *= self._integration_factor
                     print('Saturation: %d. Lowering integration time: %f' % (MAX, self._integration_time))
                     self._spectrometer.set_integration(self._integration_time*1e6)
@@ -190,18 +191,19 @@ class Detector(Thread):
                 spectrum = [v-MIN for v in spectrum]
                 # Detection
                 MAX -= MIN
-                if MAX > self._threshold: # Detection
-                    # Save spectrum
-                    print('Detection: %d' % MAX)
-                    #self._save_spectrum(self._location, spectrum)
-                else:
-                    # Increase integration time
-                    self._integration_time /= self._integration_factor
-                    if self._integration_time > self.MAX_INTEGRATION_TIME:
-                        self._integration_time = self.MAX_INTEGRATION_TIME
-                    print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
-                    self._spectrometer.set_integration(self._integration_time*1e6)
-                    continue
+                if self._operation_mode=='automatic':
+                    if MAX > self._threshold: # Detection
+                        # Save spectrum
+                        print('Detection: %d' % MAX)
+                        self._save_spectrum(self._location, spectrum)
+                    else:
+                        # Increase integration time
+                        self._integration_time /= self._integration_factor
+                        if self._integration_time > self.MAX_INTEGRATION_TIME:
+                            self._integration_time = self.MAX_INTEGRATION_TIME
+                        print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
+                        self._spectrometer.set_integration(self._integration_time*1e6)
+                        continue
                 self._last_spectrum = spectrum
     #    print('done.\nCurrent status:', spectrometer.get_current_status())
 
@@ -209,7 +211,10 @@ class Detector(Thread):
         return self._last_spectrum
 
     def get_wavelengths(self):
-        return self._wavelengths
+        return [float(v) for v in self._wavelengths] 
+
+    def set_operation_mode(self,mode):
+        self._operation_mode = mode
 
 if __name__ == '__main__':
     from time import sleep
