@@ -35,7 +35,7 @@ def create_app(det, configfile=None):
     def get_post_select_mode_data():
         select_mode = request.form['select_mode']
         # print("SELECT_MODE",select_mode)
-        det.set_operation_mode(select_mode)
+        det.operation_mode = select_mode
         return select_mode
 
     @app.route('/data')
@@ -80,8 +80,7 @@ def create_app(det, configfile=None):
             form.threshold.label                = 'THRESHOLD:'
 
         integration_time                    = get_spectro_scope('integration_time',app)*1000 #Pass integration time to ms
-        # print(det._operation_mode)
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det._operation_mode else False))
+        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det.operation_mode else False))
         #return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=int(det.integration_time*1000),form=form)
 
     @app.route("/default",methods=['GET','POST'])
@@ -119,6 +118,7 @@ def start_webstreaming():
     init_db(app)
 
     det.location = args["location"]
+    det.configure_gpio()
     det.start()
 
 

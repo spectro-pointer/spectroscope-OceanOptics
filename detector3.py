@@ -62,8 +62,10 @@ class Detector(Thread):
 
         self._last_spectrum = []
         self._operation_mode = 'automatic'
+        self._gpio_started = False
 
         self.started = False
+        self.debug_mode = debug_mode
         
         self.setDaemon(True)
         Thread.start(self)
@@ -129,6 +131,18 @@ class Detector(Thread):
         assert 0. < integration_factor < 1.
         self._integration_factor = integration_factor
 
+    @property
+    def operation_mode(self):
+        '''Gets/Sets the spectrums capture mode between automatic or manual
+
+        '''
+        return (self._operation_mode)
+
+    @operation_mode.setter
+    def operation_mode(self, mode):
+        assert mode in ['automatic','manual']
+        self._operation_mode = mode
+
     def _save_spectrum(self, path, spectrum):
         '''
             Saves a spectrum to a file with a timestamp 
@@ -189,13 +203,16 @@ class Detector(Thread):
                     continue
                 # Baseline reduction
                 spectrum = [v-MIN for v in spectrum]
+                # Capture spectrum values
+                self._last_spectrum = spectrum
                 # Detection
                 MAX -= MIN
                 if self._operation_mode=='automatic':
                     if MAX > self._threshold: # Detection
                         # Save spectrum
                         print('Detection: %d' % MAX)
-                        self._save_spectrum(self._location, spectrum)
+                        if self._gpio_started:
+                            self._save_spectrum(self._location, spectrum)
                     else:
                         # Increase integration time
                         self._integration_time /= self._integration_factor
@@ -204,7 +221,6 @@ class Detector(Thread):
                         print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
                         self._spectrometer.set_integration(self._integration_time*1e6)
                         continue
-                self._last_spectrum = spectrum
     #    print('done.\nCurrent status:', spectrometer.get_current_status())
 
     def get_last_spectrum(self):
@@ -213,8 +229,30 @@ class Detector(Thread):
     def get_wavelengths(self):
         return [float(v) for v in self._wavelengths] 
 
-    def set_operation_mode(self,mode):
-        self._operation_mode = mode
+    def button_start(self):
+        print("GPIO START event")
+        self._gpio_started = True
+
+    def button_stop(self):
+        print("GPIO STOP event")
+        self._gpio_started = False
+
+    def configure_gpio(self):
+        import RPi.GPIO as GPIO
+
+        # Setup the Pin with Internal pullups enabled and PIN in reading mode.
+        GPIO.setmode(GPIO.BCM)
+        gpio_start = 17
+        gpio_stop  = 18
+        GPIO.setup(gpio_start, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+        GPIO.setup(gpio_stop , GPIO.IN, pull_up_down = GPIO.PUD_UP)
+
+        if self.debug_mode:
+            self.button_start()
+        else:
+            GPIO.add_event_detect(gpio_start, GPIO.FALLING, callback = self.button_start)
+            GPIO.add_event_detect(gpio_stop , GPIO.FALLING, callback = self.button_stop )
+
 
 if __name__ == '__main__':
     from time import sleep
