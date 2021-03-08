@@ -23,7 +23,7 @@ __version__ = '0.5'
 
 import socket
 from sys import exit
-from time import sleep#,time
+from time import sleep
 from datetime import datetime
 import os.path
 import struct
@@ -33,7 +33,6 @@ ip_address = '127.0.0.1'
 port = 1865
 
 class Spectrometer(object):
-	# t0 = time()
 	# command constants
 	cmd_set_integration_time = "\x00\x01"
 	cmd_get_integration_time = "\x00\x02"
@@ -94,7 +93,7 @@ class Spectrometer(object):
 	# convenience constant for null/no parameters to a command
 	no_parameters = "\x00\x00"
 
-	def __init__(self, ip_address, port=port, channel=0, debug_mode=False):
+	def __init__(self, ip_address, port=port, channel=0):
 		# connect timeout
 		self.timeout = 85
 		# default refresh interval for scope mode
@@ -105,11 +104,7 @@ class Spectrometer(object):
 		self.debug_mode = debug_mode
 		self.channel=channel
 		
-		if self.debug_mode:
-			from exp.outputs.load_data import LoadData
-			self.load_data = LoadData()
-		else:
-			self.sock = self._connect_or_abort(ip_address, port)
+		self.sock = self._connect_or_abort(ip_address, port)
 
 	def _connect_or_abort(self, ip_address, port):
 		sock = socket.create_connection((ip_address, port), timeout=self.timeout)
@@ -179,8 +174,6 @@ class Spectrometer(object):
 		return msg
 	
 	def _send_command(self, cmd, *args):
-		if self.debug_mode:
-			return 0
 
 		if self.sock is None:
 			self.sock = self._connect_or_abort(ip_address, port)
@@ -198,9 +191,6 @@ class Spectrometer(object):
 		return code if len(result) == 2 else result if code == 1 else None # FIXME?: what are valid code values?
 
 	def _send_command_n(self, cmd, *args):
-		if self.debug_mode:
-			return 0
-			
 		if self.sock is None:
 			self.sock = self._connect_or_abort(ip_address, port)
 
@@ -236,10 +226,7 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_version)
 
 	def get_serial(self):
-		if self.debug_mode:
-			return 'DEBUG_MODE'
-		else:
-			return self._send_command(self.cmd_get_serial_number, self.channel)
+		return self._send_command(self.cmd_get_serial_number, self.channel)
 
 	def get_current_status(self):
 		return self._send_command(self.cmd_get_current_status, self.channel)
@@ -257,20 +244,10 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_target_url)
 
 	def get_spectrum(self):
-		if self.debug_mode:
-			# t = time()
-			# print("TIME SPECTRUM",t-self.t0)
-			# self.t0 = t
-			sleep(self.load_data.get_integration())
-			return self.load_data.get_spectrum()
-		else:
-			return self._send_command_n(self.cmd_get_spectrum, self.channel)[0]
+		return self._send_command_n(self.cmd_get_spectrum, self.channel)[0]
 
 	def get_wavelengths(self):
-		if self.debug_mode:
-			return self.load_data.get_wavelengths()
-		else:
-			return self._send_command_n(self.cmd_get_wavelengths, self.channel)[0]
+		return self._send_command_n(self.cmd_get_wavelengths, self.channel)[0]
 
 	def get_name(self):
 		return self._send_command(self.cmd_get_name, self.channel)
@@ -285,19 +262,13 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_pixel_binning_factor, self.channel)
 
 	def get_min_integration(self):
-		if self.debug_mode:
-			return self.load_data.get_min_integration()
-		else: 
-			return self._send_command(self.cmd_get_integration_time_minimum, self.channel)
+		return self._send_command(self.cmd_get_integration_time_minimum, self.channel)
 
 	def get_max_integration(self):
 		return self._send_command(self.cmd_get_integration_time_maximum, self.channel)
 
 	def get_max_intensity(self):
-		if self.debug_mode:
-			return self.load_data.get_max_intensity()
-		else:
-			return self._send_command(self.cmd_get_intensity_maximum, self.channel)
+		return self._send_command(self.cmd_get_intensity_maximum, self.channel)
 
 	def get_e_d_correct(self):
 		return self._send_command(self.cmd_get_electric_dark_correction, self.channel)
@@ -339,10 +310,7 @@ class Spectrometer(object):
 		return self._send_command(self.cmd_get_scope_interval, self.channel)
 
 	def set_integration(self, microseconds):
-		if self.debug_mode:
-			self.load_data.set_integration(microseconds/1e6)
-		else:
-			return self._send_command(self.cmd_set_integration_time, self.channel, int(microseconds))
+		return self._send_command(self.cmd_set_integration_time, self.channel, int(microseconds))
 
 	def set_boxcar(self, width):
 		return self._send_command(self.cmd_set_boxcar_width, self.channel, width)

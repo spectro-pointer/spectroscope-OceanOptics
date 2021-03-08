@@ -8,7 +8,7 @@ from flask import request, redirect
 from webpage.config import *
 from webpage.forms import ConfigForm
 from time import sleep
-from detector3 import Detector
+from detector3_mock import MockDetector
 
 
 def create_app(det):
@@ -93,7 +93,7 @@ def start_webstreaming():
     args = vars(ap.parse_args())
 
     # start the flask app
-    det = Detector(args["ip_det"],debug_mode=True)
+    det = MockDetector(args["ip_det"],debug_mode=True)
     app = create_app(det)
     init_db(app)
 
@@ -101,5 +101,4 @@ def start_webstreaming():
     det.configure_gpio()
     det.start()
 
-    app.run(host=args["ip"], port=args["port"], debug=True,
-        threaded=True, use_reloader=False)
+    app.run(host=args["ip"], port=args["port"], debug=True, threaded=True, use_reloader=False)
