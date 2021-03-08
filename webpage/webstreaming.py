@@ -11,7 +11,10 @@ from webpage.config import *
 from webpage.forms import ConfigForm
 from time import sleep
 from detector3 import Detector
+#from time import time
 select_mode = "automatic"
+
+#t0=time()
 def create_app(det, configfile=None):
     app = Flask(
                 __name__,
@@ -36,11 +39,18 @@ def create_app(det, configfile=None):
         select_mode = request.form['select_mode']
         # print("SELECT_MODE",select_mode)
         det.operation_mode = select_mode
+        det.integration_time    = get_spectro_scope('integration_time',app)
+        det.integration_factor  = get_spectro_scope('integration_factor',app)
+        det.threshold           = get_spectro_scope('threshold',app)
         return select_mode
 
     @app.route('/data')
     def spectro_data():
+        #global t0
         yAxe = det.get_last_spectrum()
+        #t = time()
+        #print("TIME:",round(t-t0,3))
+        #t0 = t
         return jsonify({'results':yAxe})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
@@ -80,6 +90,9 @@ def create_app(det, configfile=None):
             form.threshold.label                = 'THRESHOLD:'
 
         integration_time                    = get_spectro_scope('integration_time',app)*1000 #Pass integration time to ms
+        det.integration_time    = get_spectro_scope('integration_time',app)
+        det.integration_factor  = get_spectro_scope('integration_factor',app)
+        det.threshold           = get_spectro_scope('threshold',app)
         return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det.operation_mode else False))
         #return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=int(det.integration_time*1000),form=form)
 

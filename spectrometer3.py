@@ -23,7 +23,7 @@ __version__ = '0.5'
 
 import socket
 from sys import exit
-from time import sleep
+from time import sleep#,time
 from datetime import datetime
 import os.path
 import struct
@@ -33,6 +33,7 @@ ip_address = '127.0.0.1'
 port = 1865
 
 class Spectrometer(object):
+	# t0 = time()
 	# command constants
 	cmd_set_integration_time = "\x00\x01"
 	cmd_get_integration_time = "\x00\x02"
@@ -257,6 +258,9 @@ class Spectrometer(object):
 
 	def get_spectrum(self):
 		if self.debug_mode:
+			# t = time()
+			# print("TIME SPECTRUM",t-self.t0)
+			# self.t0 = t
 			sleep(self.load_data.get_integration())
 			return self.load_data.get_spectrum()
 		else:
