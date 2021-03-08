@@ -101,7 +101,6 @@ class Spectrometer(object):
 		
 		self.ip_address = ip_address
 		self.port = port
-		self.debug_mode = debug_mode
 		self.channel=channel
 		
 		self.sock = self._connect_or_abort(ip_address, port)
