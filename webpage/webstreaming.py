@@ -1,21 +1,18 @@
 from webpage.utils import *
-#from tracker_lib import *
 import threading
 import argparse
 from flask import Flask, url_for, jsonify
 from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask import request, redirect
-#from flask_appconfig import AppConfig
 from webpage.config import *
 from webpage.forms import ConfigForm
 from time import sleep
-from detector3 import Detector
-#from time import time
-select_mode = "automatic"
+from detector3_mock import MockDetector
+from spectrometer3_mock import MockSpectrometer
 
-#t0=time()
-def create_app(det, configfile=None):
+
+def create_app(det):
     app = Flask(
                 __name__,
                 template_folder="templates",
@@ -25,8 +22,7 @@ def create_app(det, configfile=None):
     Bootstrap(app)
 
     app.config['SECRET_KEY'] = 'devkey'
-    app.config['RECAPTCHA_PUBLIC_KEY'] = \
-        '6Lfol9cSAAAAADAkodaYl9wvQCwBMr3qGR_PPHcw'
+    app.config['RECAPTCHA_PUBLIC_KEY'] = '6Lfol9cSAAAAADAkodaYl9wvQCwBMr3qGR_PPHcw'
 
     @app.route("/")
     def index():
@@ -37,7 +33,6 @@ def create_app(det, configfile=None):
     @app.route('/select_mode', methods = ['POST'])
     def get_post_select_mode_data():
         select_mode = request.form['select_mode']
-        # print("SELECT_MODE",select_mode)
         det.operation_mode = select_mode
         det.integration_time    = get_spectro_scope('integration_time',app)
         det.integration_factor  = get_spectro_scope('integration_factor',app)
@@ -46,11 +41,7 @@ def create_app(det, configfile=None):
 
     @app.route('/data')
     def spectro_data():
-        #global t0
         yAxe = det.get_last_spectrum()
-        #t = time()
-        #print("TIME:",round(t-t0,3))
-        #t0 = t
         return jsonify({'results':yAxe})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
@@ -63,24 +54,16 @@ def create_app(det, configfile=None):
         form = ConfigForm()
 
         if request.method == 'POST':
-            # print("ERROR: ",form.errors)
-            # if form.validate_on_submit():
             spectro_scope_config = {}
             spectro_scope_config['integration_time']     = form.integration_time.data
             spectro_scope_config['integration_factor']   = form.integration_factor.data
             spectro_scope_config['threshold']            = form.threshold.data
-            # print("INTEGRATION TIME",form.integration_time.data)
-            # print("INTEGRATION FACTOR",form.integration_factor.data)
-            # print("THRESHOLD",form.threshold.data)
 
             set_spectro_scope(app,**spectro_scope_config)
 
             return redirect(url_for('set_config_spectrometer'))
 
         else:
-            #print("INTEGRATION TIME",form.integration_time.data)
-            #print("INTEGRATION FACTOR",form.integration_factor.data)
-            #print("THRESHOLD",form.threshold.data)
             form.integration_time.render_kw     = {'value':get_spectro_scope('integration_time',app)}
             form.integration_factor.render_kw   = {'value':get_spectro_scope('integration_factor',app)}
             form.threshold.render_kw            = {'value':get_spectro_scope('threshold',app)}
@@ -94,39 +77,26 @@ def create_app(det, configfile=None):
         det.integration_factor  = get_spectro_scope('integration_factor',app)
         det.threshold           = get_spectro_scope('threshold',app)
         return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det.operation_mode else False))
-        #return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=int(det.integration_time*1000),form=form)
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
-        if request.method == 'POST':
-            # with lock:
-            #     delete_db(app)
-            #     load_db(app)
-            #     update_params(app,set_camera_attr_en=True)
-            return redirect(url_for('set_config_spectrometer'))
-        else:
-            return redirect(url_for('set_config_spectrometer'))
+        return redirect(url_for('set_config_spectrometer'))
     return app
 
 def start_webstreaming():
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("-i", "--ip", type=str, required=True,
-        help="ip address of the device")
-
-    ap.add_argument("-o", "--port", type=int, required=True,
-        help="ephemeral port number of the server (1024 to 65535)")
-
-    ap.add_argument("-loc", "--location", type=str, required=True,
-        help="ephemeral port number of the server (1024 to 65535)")
-
-    ap.add_argument("-id","--ip_det", type=str, required=True,
-        help="ip address of the device")
+    ap.add_argument("-i", "--ip", type=str, default="0.0.0.0", help="ip address of the device")
+    ap.add_argument("-o", "--port", type=int, default=8081, help="ephemeral port number of the server")
+    ap.add_argument("-l", "--location", type=str, default='captures', help="folder to save the files")
+    ap.add_argument("-id","--ip_det", type=str, default="0.0.0.1", help="ip address of the device")
 
     args = vars(ap.parse_args())
 
     # start the flask app
-    det = Detector(args["ip_det"],debug_mode=True)
+    print("Using mock spectrometer")
+    spectrometer = MockSpectrometer(ip_address=args["ip_det"], port=1865, channel=0)
+    det = MockDetector(spectrometer)
     app = create_app(det)
     init_db(app)
 
@@ -134,10 +104,4 @@ def start_webstreaming():
     det.configure_gpio()
     det.start()
 
-
-    # t1 = threading.Thread(target=camera_loop,args=(app,))
-    # t1.daemon = True
-    # t1.start()
-
-    app.run(host=args["ip"], port=args["port"], debug=True,
-        threaded=True, use_reloader=False)
+    app.run(host=args["ip"], port=args["port"], debug=True, threaded=True, use_reloader=False)

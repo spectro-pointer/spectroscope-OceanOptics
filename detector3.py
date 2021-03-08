@@ -5,6 +5,8 @@ import os
 import threading
 from datetime import datetime
 from spectrometer3 import Spectrometer
+import RPi.GPIO as GPIO
+
 
 class Thread(threading.Thread):
     """A stoppable subclass of threading.Thread"""
@@ -30,19 +32,16 @@ class Detector(Thread):
 
     MAX_INTEGRATION_TIME        = 60.
     DEFECTS = (1,)  # defective pixels
-    def __init__(self, ip, port=1865, debug_mode=True):
+    def __init__(self, spectrometer):
         Thread.__init__(self)
         self.cv = threading.Condition()
         
-        self._spectrometer = Spectrometer(ip, port, debug_mode=debug_mode)
+        self._spectrometer = spectrometer
         self.SERIAL = self._spectrometer.get_serial()
-#        print('Serial:', self.SERIAL)
-#        print('Version:', self.spectrometer.get_version())
         self.DEFAULT_LOCATION     = self._spectrometer.get_save_location()
         print('Save location:', self.DEFAULT_LOCATION)
 
         self.MIN_INTEGRATION_TIME = float(self._spectrometer.get_min_integration())/1e6
-#        self.MAX_INTEGRATION_TIME = float(self._spectrometer.get_max_integration())/1e6
         print('Max integration time:', self.MAX_INTEGRATION_TIME)
         
         self.MAX_INTENSITY        = int(self._spectrometer.get_max_intensity())
@@ -65,8 +64,7 @@ class Detector(Thread):
         self._gpio_started = False
 
         self.started = False
-        self.debug_mode = debug_mode
-        
+
         self.setDaemon(True)
         Thread.start(self)
     
@@ -227,31 +225,21 @@ class Detector(Thread):
         return self._last_spectrum
 
     def get_wavelengths(self):
-        return [float(v) for v in self._wavelengths] 
-
-    def button_start(self):
-        print("GPIO START event")
-        self._gpio_started = True
+        return [float(v) for v in self._wavelengths]
 
     def button_stop(self):
         print("GPIO STOP event")
         self._gpio_started = False
 
     def configure_gpio(self):
-        import RPi.GPIO as GPIO
-
         # Setup the Pin with Internal pullups enabled and PIN in reading mode.
         GPIO.setmode(GPIO.BCM)
         gpio_start = 17
         gpio_stop  = 18
         GPIO.setup(gpio_start, GPIO.IN, pull_up_down = GPIO.PUD_UP)
         GPIO.setup(gpio_stop , GPIO.IN, pull_up_down = GPIO.PUD_UP)
-
-        if self.debug_mode:
-            self.button_start()
-        else:
-            GPIO.add_event_detect(gpio_start, GPIO.FALLING, callback = self.button_start)
-            GPIO.add_event_detect(gpio_stop , GPIO.FALLING, callback = self.button_stop )
+        GPIO.add_event_detect(gpio_start, GPIO.FALLING, callback = self.button_start)
+        GPIO.add_event_detect(gpio_stop , GPIO.FALLING, callback = self.button_stop )
 
 
 if __name__ == '__main__':
@@ -263,7 +251,7 @@ if __name__ == '__main__':
 #    integration_time = 1. # [seconds]
 #    max_integration_time = 5.
 
-    detector = Detector(ip_address,debug_mode=True)
+    detector = Detector(ip_address)
     location = '/home/pi/spectrometer/spectrums'
     detector.location = location
     
