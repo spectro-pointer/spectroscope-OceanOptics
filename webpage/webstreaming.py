@@ -93,7 +93,7 @@ def start_webstreaming():
     args = vars(ap.parse_args())
 
     # start the flask app
-    det = MockDetector(args["ip_det"],debug_mode=True)
+    det = MockDetector(args["ip_det"])
     app = create_app(det)
     init_db(app)
 
