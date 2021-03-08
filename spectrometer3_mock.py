@@ -1,5 +1,6 @@
 from spectrometer3 import Spectrometer
 from exp.outputs.load_data import LoadData
+from time import sleep
 
 
 class MockSpectrometer(Spectrometer):

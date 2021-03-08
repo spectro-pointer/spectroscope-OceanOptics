@@ -3,11 +3,6 @@ from spectrometer3 import Spectrometer
 from spectrometer3_mock import MockSpectrometer
 
 class MockDetector(Detector):
-
-    def __init__(self, ip, port=1865):
-        super().__init__(ip, port)
-        self._spectrometer = MockSpectrometer(ip, port)
-
     def button_start(self):
         print("GPIO START event")
         self._gpio_started = True

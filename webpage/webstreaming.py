@@ -9,6 +9,7 @@ from webpage.config import *
 from webpage.forms import ConfigForm
 from time import sleep
 from detector3_mock import MockDetector
+from spectrometer3_mock import MockSpectrometer
 
 
 def create_app(det):
@@ -93,7 +94,9 @@ def start_webstreaming():
     args = vars(ap.parse_args())
 
     # start the flask app
-    det = MockDetector(args["ip_det"])
+    print("Using mock spectrometer")
+    spectrometer = MockSpectrometer(ip_address=args["ip_det"], port=1865, channel=0)
+    det = MockDetector(spectrometer)
     app = create_app(det)
     init_db(app)
 

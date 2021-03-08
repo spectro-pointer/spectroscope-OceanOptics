@@ -32,11 +32,11 @@ class Detector(Thread):
 
     MAX_INTEGRATION_TIME        = 60.
     DEFECTS = (1,)  # defective pixels
-    def __init__(self, ip, port=1865):
+    def __init__(self, spectrometer):
         Thread.__init__(self)
         self.cv = threading.Condition()
         
-        self._spectrometer = Spectrometer(ip, port)
+        self._spectrometer = spectrometer
         self.SERIAL = self._spectrometer.get_serial()
         self.DEFAULT_LOCATION     = self._spectrometer.get_save_location()
         print('Save location:', self.DEFAULT_LOCATION)
