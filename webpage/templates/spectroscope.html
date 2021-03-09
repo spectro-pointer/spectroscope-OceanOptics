@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block extra_style %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var myChart;
+    var getData = jQuery.get( "/data");
+    getData.done(function(results) {
+        var ctx = document.getElementById('spectrum').getContext('2d');
+        var xAxe = {{data_x}};
+        var yAxe = results.results;
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xAxe,
+                datasets: [{
+                    label: 'Evolution of device measures',
+                    borderColor: 'rgb(0, 0, 0)',
+                    data: yAxe,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                                ticks: {
+                                    max: 186,   //TODO Change by jinja variable
+                                    min: 1033,  //TODO Change by jinja variable
+                                    stepSize: 1 //TODO Change by jinja variable
+                                }
+                            }],
+                    yAxes: [{
+                                ticks: {
+                                    max: 70000,     //TODO Change by jinja variable
+                                    min: 0,         //TODO Change by jinja variable
+                                    stepSize: 10000 //TODO Change by jinja variable
+                                }
+                            }],
+              }
+            }
+        });
+    });
+
+    function addData(chart, label, data) {
+        chart.data.labels = label;
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data = data;
+        });
+        chart.update();
+    }
+
+    function removeData(chart) {
+        chart.data.labels.pop();
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.pop();
+        });
+        chart.update(0);
+    }
+
+    function updateChart(){
+        var updatedData = jQuery.get('/data');
+        /*removeData(myChart);*/
+        updatedData.done(function(results){
+            var xAxe = {{data_x}};
+            var yAxe = results.results;
+            //console.log(yAxe)
+            addData(myChart,xAxe,yAxe)
+        });
+    }
+
+    /*This function selects between automatic mode and manual mode*/
+    function select_mode(mode){
+        jQuery.post('/select_mode', {
+                select_mode: mode
+        });
+    }
+
+    function save_spectrum(){
+        jQuery.post('/save_spectrum');
+    }
+
+    function disableElement() {
+      document.getElementById("save_spectrum").disabled = true;
+    }
+
+    function enableElement() {
+      document.getElementById("save_spectrum").disabled = false;
+    }
+
+    document.getElementById("automatic").addEventListener("click", function() {
+        disableElement();
+        select_mode("automatic");
+    }, false);
+
+    document.getElementById("manual").addEventListener("click", function() {
+        enableElement();
+        select_mode("manual");
+    }, false);
+
+    document.getElementById("save_spectrum").addEventListener("click", function() {
+        save_spectrum();
+    }, false);
+
+    $(document).ready(function () {
+        setInterval(function() {
+            updateChart();
+            //console.log({{integration_time}})
+        }, {{integration_time}});
+    });
+
+    if ("{{auto_en}}" == "True"){
+        disableElement();
+    }
+    else{
+        enableElement();
+    }
+
+</script>
+{% endblock %}
+
+
+        </div>
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row bg-sp text-white shadow py-2 d-flex mb-2">
+        <div class="col-6 mt-0 pt-0 mb-0 pb-0">
+            <h4 class='pl-3'>Spectro-Pointer SpectroScope</h4>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 order-sm-1">
+                <div class="row mb-2">
+                    <canvas id="spectrum" width="300" height="100"></canvas>
+                </div>
+                <form method='POST' action='/spectroscope' enctype='multipart/form-data'>
+                    <div class="col-12 order-sm-1">
+                        <div class="row my-0 d-flex flex-row-reverse">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                              <label class="btn btn-secondary bg-sp active">
+                                <input type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
+                              </label>
+                              <label class="btn btn-secondary bg-sp">
+                                <input type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
+                              </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr noshade="noshade" />
+                    <div class="row my-0">
+                        <div class="col-sm-12 col-lg-6 order-sm-1">
+                            <div class="form-group">
+                                {{ form.integration_time.label }}
+                                {{ form.integration_time(size=64,class="form-control") }}
+                                {% for error in form.integration_time.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.integration_factor.label }}
+                                {{ form.integration_factor(size=64, class="form-control") }}
+                                {% for error in form.integration_factor.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.threshold.label }}
+                                {{ form.threshold(size=64,class="form-control") }}
+                                {% for error in form.threshold.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-lg-6 order-sm-2">
+                            <div class="row my-0 d-flex flex-row-reverse pr-3">
+                                <button type="submit" class="btn btn-primary bg-sp" style="border-color: #3f8a64;">Actualizar</button>
+                            </div>
+                            <div class="row mt-2 d-flex flex-row-reverse pr-3">
+                                <input type="button" class="btn btn-secondary bg-sp" style="border-color: #3f8a64;" id="save_spectrum" autocomplete="off" value="Save Spectrum">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

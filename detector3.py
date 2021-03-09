@@ -5,6 +5,8 @@ import os
 import threading
 from datetime import datetime
 from spectrometer3 import Spectrometer
+import RPi.GPIO as GPIO
+
 
 class Thread(threading.Thread):
     """A stoppable subclass of threading.Thread"""
@@ -30,23 +32,20 @@ class Detector(Thread):
 
     MAX_INTEGRATION_TIME        = 60.
     DEFECTS = (1,)  # defective pixels
-    def __init__(self, ip, port=1865):
+    def __init__(self, spectrometer):
         Thread.__init__(self)
         self.cv = threading.Condition()
         
-        self._spectrometer = Spectrometer(ip, port)
+        self._spectrometer = spectrometer
         self.SERIAL = self._spectrometer.get_serial()
-#        print('Serial:', self.SERIAL)
-#        print('Version:', self.spectrometer.get_version())
         self.DEFAULT_LOCATION     = self._spectrometer.get_save_location()
         print('Save location:', self.DEFAULT_LOCATION)
 
         self.MIN_INTEGRATION_TIME = float(self._spectrometer.get_min_integration())/1e6
-#        self.MAX_INTEGRATION_TIME = float(self._spectrometer.get_max_integration())/1e6
         print('Max integration time:', self.MAX_INTEGRATION_TIME)
         
         self.MAX_INTENSITY        = int(self._spectrometer.get_max_intensity())
-        print('Max intensity:', self.MAX_INTENSITY)
+        print('Max intensity:', self.MAX_INTENSITY,'\n')
 
         self._location          = self.DEFAULT_LOCATION
 
@@ -60,8 +59,12 @@ class Detector(Thread):
         
         self._wavelengths = tuple(w for w in self._spectrometer.get_wavelengths().split())
 
+        self._last_spectrum = []
+        self._operation_mode = 'automatic'
+        self._gpio_started = False
+
         self.started = False
-        
+
         self.setDaemon(True)
         Thread.start(self)
     
@@ -126,6 +129,18 @@ class Detector(Thread):
         assert 0. < integration_factor < 1.
         self._integration_factor = integration_factor
 
+    @property
+    def operation_mode(self):
+        '''Gets/Sets the spectrums capture mode between automatic or manual
+
+        '''
+        return (self._operation_mode)
+
+    @operation_mode.setter
+    def operation_mode(self, mode):
+        assert mode in ['automatic','manual']
+        self._operation_mode = mode
+
     def _save_spectrum(self, path, spectrum):
         '''
             Saves a spectrum to a file with a timestamp 
@@ -135,7 +150,7 @@ class Detector(Thread):
             Wavelengths Intensities
         '''
         f = os.path.join(path, '%s.txt' % datetime.strftime(datetime.now(), '%d-%m-%Y_%H:%M:%S'))
-        print("Saving in '%s'" % f)
+        print("Saving in '%s'\n" % f)
         with open(f, 'w') as dst:
             print('Serial Number:', self.SERIAL, file=dst)
             print('Integration time: %d' % (self._integration_time*1e6), file=dst)
@@ -179,31 +194,57 @@ class Detector(Thread):
         #        MEAN = sum(spectrum)/len(spectrum)
                 # Saturation detection
                 MAX = max(spectrum)
-                if MAX >= self._saturation:
+                if MAX >= self._saturation and self._operation_mode=='automatic':
                     self._integration_time *= self._integration_factor
                     print('Saturation: %d. Lowering integration time: %f' % (MAX, self._integration_time))
                     self._spectrometer.set_integration(self._integration_time*1e6)
                     continue
                 # Baseline reduction
                 spectrum = [v-MIN for v in spectrum]
+                # Capture spectrum values
+                self._last_spectrum = spectrum
                 # Detection
                 MAX -= MIN
-                if MAX > self._threshold: # Detection
-                    # Save spectrum
-                    print('Detection: %d' % MAX)
-                    self._save_spectrum(self._location, spectrum)
-                else:
-                    # Increase integration time
-                    self._integration_time /= self._integration_factor
-                    if self._integration_time > self.MAX_INTEGRATION_TIME:
-                        self._integration_time = self.MAX_INTEGRATION_TIME
-                    print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
-                    self._spectrometer.set_integration(self._integration_time*1e6)
-                    continue
+                if self._operation_mode=='automatic':
+                    if MAX > self._threshold: # Detection
+                        # Save spectrum
+                        print('Detection: %d' % MAX)
+                        if self._gpio_started:
+                            self._save_spectrum(self._location, spectrum)
+                    else:
+                        # Increase integration time
+                        self._integration_time /= self._integration_factor
+                        if self._integration_time > self.MAX_INTEGRATION_TIME:
+                            self._integration_time = self.MAX_INTEGRATION_TIME
+                        print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
+                        self._spectrometer.set_integration(self._integration_time*1e6)
+                        continue
     #    print('done.\nCurrent status:', spectrometer.get_current_status())
+
+    def get_last_spectrum(self):
+        return self._last_spectrum
+
+    def get_wavelengths(self):
+        return [float(v) for v in self._wavelengths]
+
+    def button_stop(self):
+        print("GPIO STOP event")
+        self._gpio_started = False
+
+    def configure_gpio(self):
+        # Setup the Pin with Internal pullups enabled and PIN in reading mode.
+        GPIO.setmode(GPIO.BCM)
+        gpio_start = 17
+        gpio_stop  = 18
+        GPIO.setup(gpio_start, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+        GPIO.setup(gpio_stop , GPIO.IN, pull_up_down = GPIO.PUD_UP)
+        GPIO.add_event_detect(gpio_start, GPIO.FALLING, callback = self.button_start)
+        GPIO.add_event_detect(gpio_stop , GPIO.FALLING, callback = self.button_stop )
+
 
 if __name__ == '__main__':
     from time import sleep
+
     # server address
     ip_address = 'localhost'
 #    port = 1865
@@ -215,11 +256,11 @@ if __name__ == '__main__':
     detector.location = location
     
 #    detector.integration_time = integration_time
-    print('Integration time: %s s' % detector.integration_time)
+    print('Integration time: %s s\n' % detector.integration_time)
 
     detector.start()
     
     while True:
         sleep(1)
-        
+
     detector.stop()

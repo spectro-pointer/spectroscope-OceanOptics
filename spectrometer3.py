@@ -23,7 +23,7 @@ __version__ = '0.5'
 
 import socket
 from sys import exit
-#from time import sleep
+from time import sleep
 from datetime import datetime
 import os.path
 import struct
@@ -101,7 +101,6 @@ class Spectrometer(object):
 		
 		self.ip_address = ip_address
 		self.port = port
-		
 		self.channel=channel
 		
 		self.sock = self._connect_or_abort(ip_address, port)
@@ -174,6 +173,7 @@ class Spectrometer(object):
 		return msg
 	
 	def _send_command(self, cmd, *args):
+
 		if self.sock is None:
 			self.sock = self._connect_or_abort(ip_address, port)
 		msg = self._build_command(cmd, *args)
