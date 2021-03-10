@@ -7,11 +7,12 @@ from flask_bootstrap import Bootstrap
 from flask import request, redirect
 from webpage.config import *
 from webpage.forms import ConfigForm
-from time import sleep
+from time import sleep, time
 from detector3_mock import MockDetector
 from spectrometer3_mock import MockSpectrometer
 
 
+t0=time()
 def create_app(det):
     app = Flask(
                 __name__,
@@ -41,7 +42,11 @@ def create_app(det):
 
     @app.route('/data')
     def spectro_data():
+        global t0
         yAxe = det.get_last_spectrum()
+        t = time()
+        print("TIME:",round(t-t0,3))
+        t0 = t
         return jsonify({'results':yAxe})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
