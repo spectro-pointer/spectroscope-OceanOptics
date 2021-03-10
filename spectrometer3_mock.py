@@ -1,6 +1,6 @@
 from spectrometer3 import Spectrometer
 from exp.outputs.load_data import LoadData
-from time import sleep
+from time import sleep,time
 
 
 class MockSpectrometer(Spectrometer):
@@ -8,6 +8,7 @@ class MockSpectrometer(Spectrometer):
     def __init__(self, ip_address, port=1865, channel=0):
         super().__init__(ip_address, port, channel)
         self.load_data = LoadData()
+        self.t0 = time()
 
     def _connect_or_abort(self, ip_address, port):
         print("Using mock spectrometer")
@@ -22,7 +23,10 @@ class MockSpectrometer(Spectrometer):
         return 'DEBUG_MODE'
 
     def get_spectrum(self):
+        t = time()
+        print("TIME SPECTRUM",t-self.t0)
         sleep(self.load_data.get_integration())
+        self.t0 = t
         return self.load_data.get_spectrum()
 
     def get_wavelengths(self):
