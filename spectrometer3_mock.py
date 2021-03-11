@@ -24,7 +24,7 @@ class MockSpectrometer(Spectrometer):
 
     def get_spectrum(self):
         t = time()
-        print("TIME SPECTRUM",t-self.t0)
+        # print("TIME SPECTRUM",t-self.t0)
         sleep(self.load_data.get_integration())
         self.t0 = t
         return self.load_data.get_spectrum()

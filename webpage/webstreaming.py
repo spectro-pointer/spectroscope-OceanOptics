@@ -13,6 +13,7 @@ from spectrometer3_mock import MockSpectrometer
 
 
 t0=time()
+t1=time()
 def create_app(det):
     app = Flask(
                 __name__,
@@ -44,10 +45,23 @@ def create_app(det):
     def spectro_data():
         global t0
         yAxe = det.get_last_spectrum()
+        xAxe = det.get_wavelengths()
         t = time()
-        print("TIME:",round(t-t0,3))
+        # print("TIME DATA:",round(t-t0,3))
         t0 = t
-        return jsonify({'results':yAxe})
+        return jsonify({'yAxe':yAxe,'xAxe':xAxe})
+
+    @app.route('/web_config')
+    def set_web_config():
+        global t1
+        yAxe = det.get_last_spectrum()
+        xAxe = det.get_wavelengths()
+        t = time()
+        # print("TIME CONFIG:",round(t-t1,3))
+        t1 = t
+        integration_time = det.integration_time
+        auto_en = bool("automatic" == det.operation_mode)
+        return jsonify({'integration_time': integration_time,'auto_en':auto_en})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
     def save_spectrum():
@@ -81,7 +95,9 @@ def create_app(det):
         det.integration_time    = get_spectro_scope('integration_time',app)
         det.integration_factor  = get_spectro_scope('integration_factor',app)
         det.threshold           = get_spectro_scope('threshold',app)
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det.operation_mode else False))
+        return render_template("spectroscope.html", \
+                                form=form, \
+                                auto_en=(True if "automatic" == det.operation_mode else False))
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():
