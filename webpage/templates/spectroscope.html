@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block extra_style %}
+<style type="text/css">
+    .button-clicked {
+        background: red;
+    }
+    .button-not-clicked {
+        background: green;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -59,10 +67,13 @@
                         </div>
                         <div class="col-sm-12 col-lg-6 order-sm-2">
                             <div class="row my-0 d-flex flex-row-reverse pr-3">
-                                <button type="submit" class="btn btn-primary bg-sp" style="border-color: #3f8a64;">Actualizar</button>
+                                <button type="submit" class="btn btn-secondary bg-sp" style="border-color: #3f8a64;">Actualizar</button>
                             </div>
                             <div class="row mt-2 d-flex flex-row-reverse pr-3">
                                 <input type="button" class="btn btn-secondary bg-sp" style="border-color: #3f8a64;" id="save_spectrum" autocomplete="off" value="Save Spectrum">
+                            </div>
+                            <div class="row mt-2 d-flex flex-row-reverse pr-3">
+                                <input type="button" class="btn btn-secondary" style="border-color: #3f8a64;" id="stop_graph" autocomplete="off" value="Stop Graph">
                             </div>
                         </div>
                     </div>

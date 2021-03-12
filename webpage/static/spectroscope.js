@@ -3,6 +3,7 @@ var myInterval;
 var intTime = 1000;
 var newIntTime = 1000;
 var auto_en = true;
+var stop_graph = false;
 var getData = jQuery.get("/data");
 getData.done(function(results) {
     var ctx = document.getElementById('spectrum').getContext('2d');
@@ -114,12 +115,20 @@ function save_spectrum(){
     jQuery.post('/save_spectrum');
 }
 
+function stop_graph_toggle(){
+    jQuery.post('/stop_graph',{
+        state : stop_graph
+    });
+}
+
 function disableElement() {
-  document.getElementById("save_spectrum").disabled = true;
+    //console.log("DISABLE BUTTON");
+    document.getElementById("save_spectrum").disabled = true;
 }
 
 function enableElement() {
-  document.getElementById("save_spectrum").disabled = false;
+    //console.log("ENABLE BUTTON");
+    document.getElementById("save_spectrum").disabled = false;
 }
 
 document.getElementById("automatic").addEventListener("click", function() {
@@ -136,6 +145,22 @@ document.getElementById("manual").addEventListener("click", function() {
 
 document.getElementById("save_spectrum").addEventListener("click", function() {
     save_spectrum();
+}, false);
+
+document.getElementById("stop_graph").addEventListener("click", function() {
+    stop_graph = !stop_graph;
+    if (stop_graph == true){
+        enableElement();
+        $("#stop_graph").addClass('button-clicked');
+    }
+    else{
+        if (auto_en == true){
+            disableElement();
+        }
+        $("#stop_graph").addClass('button-not-clicked');
+    }
+    stop_graph_toggle();
+    //console.log("STOP_GRAPH",stop_graph);
 }, false);
 
 $(document).ready(function () {

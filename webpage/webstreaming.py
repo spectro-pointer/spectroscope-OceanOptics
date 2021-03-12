@@ -68,6 +68,13 @@ def create_app(det):
         det._save_spectrum(det.location,det.get_last_spectrum())
         return "Ok"
 
+    @app.route("/stop_graph", methods=["GET","POST"])
+    def stop_graph():
+        state = request.form['state'] == 'true'
+        # print("STATE STOP GRAPH", state)
+        det.stop_graph = state
+        return "Ok"
+
     @app.route("/spectroscope", methods=["GET","POST"])
     def set_config_spectrometer():
         form = ConfigForm()
