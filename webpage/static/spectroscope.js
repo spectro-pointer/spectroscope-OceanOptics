@@ -91,6 +91,7 @@ function updateChart(){
         addData(myChart,xAxe,yAxe);
         //console.log("OUT "+auto_en+" "+intTime);
     });
+    //console.log("HERE "+auto_en+" "+intTime);
 
     //If auto_en == false, then the manual mode is selected
     if(auto_en == false){
@@ -175,8 +176,8 @@ $(document).ready(function () {
     getConfig.done(function(results){
         //############################################
         //This variable control the enable/disable button of save_spectrum
-        //console.log(results.auto_en);
         auto_en = results.auto_en;
+        //console.log(auto_en);
         intTime = results.integration_time*1000
         if (auto_en == true){
             disableElement();
@@ -186,6 +187,7 @@ $(document).ready(function () {
             enableElement();
             //console.log("ENABLE");
         }
+        updateWebConfig(intTime);
         updateChart();
     });
 });
