@@ -18,11 +18,15 @@ getData.done(function(results) {
                 data: yAxe,
                 pointRadius: 0,
                 borderColor: "black",
+                borderWidth: 1,
                 backgroundColor: "black",
                 fill: false,
             }],
         },
         options: {
+            animation: {
+                duration: 100,
+            },
             events: ['click'],
             scales: {
                 xAxes: [{
@@ -69,7 +73,10 @@ function updateWebConfig(integration_time){
     intTime = integration_time;
     //console.log("CONF "+auto_en+" "+intTime+" "+integration_time);
     myInterval = setInterval(function() {
+            $(".progress-bar").animate({width: "0%"}, 0);
             updateChart();
+            $(".progress-bar").animate({width: "100%"}, integration_time);
+            //console.log("INTERVAL 2",integration_time);
     }, integration_time);
 }
 
@@ -169,7 +176,9 @@ $(document).ready(function () {
         //############################################
         //This variable control the enable/disable button of save_spectrum
         //console.log(results.auto_en);
-        if (results.auto_en == true){
+        auto_en = results.auto_en;
+        intTime = results.integration_time*1000
+        if (auto_en == true){
             disableElement();
             //console.log("DISABLE");
         }
@@ -177,14 +186,7 @@ $(document).ready(function () {
             enableElement();
             //console.log("ENABLE");
         }
-
-        //############################################
-        //Sets the first integration time
-        intTime = results.integration_time*1000
-        myInterval = setInterval(function() {
-            updateChart();
-        }, intTime);
-        //console.log("HERE "+intTime);
+        updateChart();
     });
 });
 
