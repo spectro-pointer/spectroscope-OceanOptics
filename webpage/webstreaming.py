@@ -49,7 +49,14 @@ def create_app(det):
         t = time()
         # print("TIME DATA:",round(t-t0,3))
         t0 = t
-        return jsonify({'yAxe':yAxe,'xAxe':xAxe})
+        data = []
+        for x,y in zip(xAxe,yAxe):
+            # data.append({'x':x,'y':y})
+            data.append([x,y])
+        # print('type',type(data),'data',data[0],'len x',len(xAxe),'len y',len(yAxe),'type x',type(xAxe[0]),'type y',type(yAxe[0]))
+        if not data:
+            data.append([0,0])
+        return jsonify({'yAxe':yAxe,'xAxe':xAxe,'data':data})
 
     @app.route('/web_config')
     def set_web_config():

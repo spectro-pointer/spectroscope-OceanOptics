@@ -5,17 +5,33 @@ var newIntTime = 1000;
 var auto_en = true;
 var stop_graph = false;
 var getData = jQuery.get("/data");
+var g;
 getData.done(function(results) {
-    var ctx = document.getElementById('spectrum').getContext('2d');
+    //var ctx = document.getElementById('spectrum').getContext('2d');
     var xAxe = results.xAxe;
     var yAxe = results.yAxe;
-    myChart = new Chart(ctx, {
+    var data_x_y = results.data;
+    ////////////////////////////////////////////////////////////////
+    //
+    // DYEGRAPH
+    //
+    ////////////////////////////////////////////////////////////////
+
+    g = new Dygraph(document.getElementById("spectrum"), data_x_y,
+                        {
+                          drawPoints: true,
+                          showRoller: true,
+                          valueRange: [0.0, 80000.0],
+                          labels: ['Time', 'Random']
+                        });
+/*    myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: xAxe,
+            //xlabels: xAxe,
             datasets: [{
                 label: '',
-                data: yAxe,
+                //data: yAxe,
+                data:data_x_y,
                 pointRadius: 0,
                 borderColor: "black",
                 borderWidth: 1,
@@ -25,14 +41,15 @@ getData.done(function(results) {
         },
         options: {
             animation: {
-                duration: 100,
+                duration: 0,
             },
             events: ['click'],
             scales: {
                 xAxes: [{
+                            type: 'line',
                             ticks: {
-                                max: 0,   //TODO Change by jinja variable
-                                min: 1,  //TODO Change by jinja variable
+                                max: 180,   //TODO Change by jinja variable
+                                min: 1033,  //TODO Change by jinja variable
                                 stepSize: 1 //TODO Change by jinja variable
                             }
                         }],
@@ -45,9 +62,9 @@ getData.done(function(results) {
                         }],
           }
         }
-    });
+    });*/
 });
-
+/*
 function addData(chart, label, data) {
     chart.data.labels = label;
     chart.data.datasets.forEach((dataset) => {
@@ -63,7 +80,7 @@ function removeData(chart) {
     });
     chart.update(0);
 }
-
+*/
 function updateWebConfig(integration_time){
 
     //############################################
@@ -86,9 +103,12 @@ function updateChart(){
     updatedData.done(function(results){
         var xAxe = results.xAxe;
         var yAxe = results.yAxe;
+        var data_x_y = results.data;
         //############################################
         //Changes data in graph
-        addData(myChart,xAxe,yAxe);
+        //addData(myChart,xAxe,yAxe);
+        data_x_y = results.data;
+        g.updateOptions( { 'file': data_x_y } );
         //console.log("OUT "+auto_en+" "+intTime);
     });
     //console.log("HERE "+auto_en+" "+intTime);
