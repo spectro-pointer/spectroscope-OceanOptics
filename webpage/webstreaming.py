@@ -43,29 +43,18 @@ def create_app(det):
 
     @app.route('/data')
     def spectro_data():
-        global t0
+        data = []
         yAxe = det.get_last_spectrum()
         xAxe = det.get_wavelengths()
-        t = time()
-        # print("TIME DATA:",round(t-t0,3))
-        t0 = t
-        data = []
+        max_intensity = det.MAX_INTENSITY
         for x,y in zip(xAxe,yAxe):
-            # data.append({'x':x,'y':y})
             data.append([x,y])
-        # print('type',type(data),'data',data[0],'len x',len(xAxe),'len y',len(yAxe),'type x',type(xAxe[0]),'type y',type(yAxe[0]))
         if not data:
             data.append([0,0])
-        return jsonify({'yAxe':yAxe,'xAxe':xAxe,'data':data})
+        return jsonify({'data':data,'max_intensity':max_intensity})
 
     @app.route('/web_config')
     def set_web_config():
-        global t1
-        yAxe = det.get_last_spectrum()
-        xAxe = det.get_wavelengths()
-        t = time()
-        # print("TIME CONFIG:",round(t-t1,3))
-        t1 = t
         integration_time = det.integration_time
         auto_en = bool("automatic" == det.operation_mode)
         return jsonify({'integration_time': integration_time,'auto_en':auto_en})
@@ -78,7 +67,6 @@ def create_app(det):
     @app.route("/stop_graph", methods=["GET","POST"])
     def stop_graph():
         state = request.form['state'] == 'true'
-        # print("STATE STOP GRAPH", state)
         det.stop_graph = state
         return "Ok"
 

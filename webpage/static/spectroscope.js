@@ -1,117 +1,43 @@
-var myChart;
 var myInterval;
 var intTime = 1000;
-var newIntTime = 1000;
+var newIntTime = 0;
 var auto_en = true;
 var stop_graph = false;
 var getData = jQuery.get("/data");
 var g;
 getData.done(function(results) {
-    //var ctx = document.getElementById('spectrum').getContext('2d');
-    var xAxe = results.xAxe;
-    var yAxe = results.yAxe;
     var data_x_y = results.data;
-    ////////////////////////////////////////////////////////////////
-    //
-    // DYEGRAPH
-    //
-    ////////////////////////////////////////////////////////////////
-
     g = new Dygraph(document.getElementById("spectrum"), data_x_y,
                         {
                           drawPoints: true,
                           showRoller: true,
-                          valueRange: [0.0, 80000.0],
+                          valueRange: [0.0, results.max_intensity*1.1],
                           labels: ['Time', 'Random']
                         });
-/*    myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            //xlabels: xAxe,
-            datasets: [{
-                label: '',
-                //data: yAxe,
-                data:data_x_y,
-                pointRadius: 0,
-                borderColor: "black",
-                borderWidth: 1,
-                backgroundColor: "black",
-                fill: false,
-            }],
-        },
-        options: {
-            animation: {
-                duration: 0,
-            },
-            events: ['click'],
-            scales: {
-                xAxes: [{
-                            type: 'line',
-                            ticks: {
-                                max: 180,   //TODO Change by jinja variable
-                                min: 1033,  //TODO Change by jinja variable
-                                stepSize: 1 //TODO Change by jinja variable
-                            }
-                        }],
-                yAxes: [{
-                            ticks: {
-                                max: 70000,     //TODO Change by jinja variable
-                                min: 0,         //TODO Change by jinja variable
-                                stepSize: 10000//10000 //TODO Change by jinja variable
-                            }
-                        }],
-          }
-        }
-    });*/
 });
-/*
-function addData(chart, label, data) {
-    chart.data.labels = label;
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data = data;
-    });
-    chart.update();
-}
 
-function removeData(chart) {
-    chart.data.labels.pop();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.pop();
-    });
-    chart.update(0);
-}
-*/
 function updateWebConfig(integration_time){
 
     //############################################
     //This if statement control if the interval for updating the Chart must change
     clearInterval(myInterval);
-    //console.log("CONF "+auto_en+" "+intTime+" "+integration_time);
     intTime = integration_time;
-    //console.log("CONF "+auto_en+" "+intTime+" "+integration_time);
     myInterval = setInterval(function() {
-            $(".progress-bar").animate({width: "0%"}, 0);
-            updateChart();
-            $(".progress-bar").animate({width: "100%"}, integration_time);
-            //console.log("INTERVAL 2",integration_time);
+        $(".progress-bar").animate({width: "0%"}, 0);
+        updateChart();
+        $(".progress-bar").animate({width: "100%"}, integration_time);
     }, integration_time);
 }
 
 function updateChart(){
     var updatedData = jQuery.get('/data');
-    /*removeData(myChart);*/
     updatedData.done(function(results){
-        var xAxe = results.xAxe;
-        var yAxe = results.yAxe;
         var data_x_y = results.data;
         //############################################
         //Changes data in graph
-        //addData(myChart,xAxe,yAxe);
         data_x_y = results.data;
         g.updateOptions( { 'file': data_x_y } );
-        //console.log("OUT "+auto_en+" "+intTime);
     });
-    //console.log("HERE "+auto_en+" "+intTime);
 
     //If auto_en == false, then the manual mode is selected
     if(auto_en == false){
@@ -122,14 +48,12 @@ function updateChart(){
     }
     //If auto_en == true, then the automatic mode is selected
     else{
-        newIntTime = 1000; //TODO Hardcoded value
+        newIntTime = 1000; //Hardcoded value
     }
 
     if (intTime != newIntTime){
         updateWebConfig(newIntTime);
     }
-    //console.log("IN  "+auto_en+" "+intTime+" "+newIntTime);
-
 }
 
 /*This function selects between automatic mode and manual mode*/
@@ -149,26 +73,54 @@ function stop_graph_toggle(){
     });
 }
 
+function disableIntegrationFactor() {
+    document.getElementById("integration_factor").disabled = true;
+}
+
+function disableThreshold() {
+    document.getElementById("threshold").disabled = true;
+}
+
 function disableElement() {
-    //console.log("DISABLE BUTTON");
     document.getElementById("save_spectrum").disabled = true;
 }
 
 function enableElement() {
-    //console.log("ENABLE BUTTON");
     document.getElementById("save_spectrum").disabled = false;
+}
+
+function enableIntegrationFactor() {
+    document.getElementById("integration_factor").disabled = false;
+}
+
+function enableThreshold() {
+    document.getElementById("threshold").disabled = false;
+}
+
+function hideProgressBar() {
+    document.getElementById("progress_div").style.visibility = "hidden";
+}
+
+function showProgressBar() {
+    document.getElementById("progress_div").style.visibility = "visible";
 }
 
 document.getElementById("automatic").addEventListener("click", function() {
     disableElement();
     select_mode("automatic");
     auto_en = true;
+    hideProgressBar();
+    disableIntegrationFactor();
+    disableThreshold();
 }, false);
 
 document.getElementById("manual").addEventListener("click", function() {
     enableElement();
     select_mode("manual");
     auto_en = false;
+    showProgressBar();
+    enableIntegrationFactor();
+    enableThreshold();
 }, false);
 
 document.getElementById("save_spectrum").addEventListener("click", function() {
@@ -178,17 +130,20 @@ document.getElementById("save_spectrum").addEventListener("click", function() {
 document.getElementById("stop_graph").addEventListener("click", function() {
     stop_graph = !stop_graph;
     if (stop_graph == true){
-        enableElement();
         $("#stop_graph").addClass('button-clicked');
+        enableElement();
+        hideProgressBar();
     }
     else{
+        $("#stop_graph").addClass('button-not-clicked');
         if (auto_en == true){
             disableElement();
         }
-        $("#stop_graph").addClass('button-not-clicked');
+        else{
+            showProgressBar();
+        }
     }
     stop_graph_toggle();
-    //console.log("STOP_GRAPH",stop_graph);
 }, false);
 
 $(document).ready(function () {
@@ -197,15 +152,18 @@ $(document).ready(function () {
         //############################################
         //This variable control the enable/disable button of save_spectrum
         auto_en = results.auto_en;
-        //console.log(auto_en);
         intTime = results.integration_time*1000
         if (auto_en == true){
+            hideProgressBar();
             disableElement();
-            //console.log("DISABLE");
+            disableIntegrationFactor();
+            disableThreshold();
         }
         else{
+            showProgressBar();
             enableElement();
-            //console.log("ENABLE");
+            enableIntegrationFactor();
+            enableThreshold();
         }
         updateWebConfig(intTime);
         updateChart();
