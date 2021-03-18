@@ -65,7 +65,7 @@ class Detector(Thread):
 
         self.started = False
 
-        self._stop_graph = False
+        self.stop_graph = False
 
         self.setDaemon(True)
         Thread.start(self)
@@ -94,19 +94,6 @@ class Detector(Thread):
         self._integration_time = integration_time
         
         self._spectrometer.set_integration(self._integration_time*1e6)
-
-    @property
-    def stop_graph(self):
-        return self._stop_graph
-
-
-    @stop_graph.setter
-    def stop_graph(self,stop_graph):
-        self._stop_graph = stop_graph
-
-    @stop_graph.getter
-    def stop_graph(self):
-        return self._stop_graph
 
     @property
     def threshold(self):
