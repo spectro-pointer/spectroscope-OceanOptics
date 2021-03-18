@@ -65,6 +65,8 @@ class Detector(Thread):
 
         self.started = False
 
+        self.stop_graph = False
+
         self.setDaemon(True)
         Thread.start(self)
     
@@ -202,15 +204,17 @@ class Detector(Thread):
                 # Baseline reduction
                 spectrum = [v-MIN for v in spectrum]
                 # Capture spectrum values
-                self._last_spectrum = spectrum
+                # print("STOP GRAPH",self.stop_graph)
+                if not self.stop_graph:
+                    self._last_spectrum = spectrum
                 # Detection
                 MAX -= MIN
                 if self._operation_mode=='automatic':
                     if MAX > self._threshold: # Detection
                         # Save spectrum
                         print('Detection: %d' % MAX)
-                        if self._gpio_started:
-                            self._save_spectrum(self._location, spectrum)
+                        if self._gpio_started and not self.stop_graph:
+                            self._save_spectrum(self._location, self._last_spectrum)
                     else:
                         # Increase integration time
                         self._integration_time /= self._integration_factor
