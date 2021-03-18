@@ -76,9 +76,6 @@ def create_app(det):
             spectro_scope_config['threshold']            = form.threshold.data
 
             set_spectro_scope(app,**spectro_scope_config)
-
-            return redirect(url_for('set_config_spectrometer'))
-
         else:
             form.integration_time.render_kw     = {'value':get_spectro_scope('integration_time',app)}
             form.integration_factor.render_kw   = {'value':get_spectro_scope('integration_factor',app)}
@@ -92,6 +89,7 @@ def create_app(det):
         det.integration_time    = get_spectro_scope('integration_time',app)
         det.integration_factor  = get_spectro_scope('integration_factor',app)
         det.threshold           = get_spectro_scope('threshold',app)
+
         return render_template("spectroscope.html",
                                 form=form,
                                 auto_en=("automatic" == det.operation_mode))

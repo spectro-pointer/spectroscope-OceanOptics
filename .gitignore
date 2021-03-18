@@ -94,3 +94,10 @@ ENV/
 
 # VS Code
 .vscode/
+
+
+# Project specfic ignores
+# automatic captures
+captures/
+# db
+webpage/static/spectro_scope.db
