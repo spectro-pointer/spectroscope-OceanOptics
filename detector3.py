@@ -204,8 +204,8 @@ class Detector(Thread):
                 # Baseline reduction
                 spectrum = [v-MIN for v in spectrum]
                 # Capture spectrum values
-                # print("STOP GRAPH",self._stop_graph)
-                if not self._stop_graph:
+                # print("STOP GRAPH",self.stop_graph)
+                if not self.stop_graph:
                     self._last_spectrum = spectrum
                 # Detection
                 MAX -= MIN
@@ -213,7 +213,7 @@ class Detector(Thread):
                     if MAX > self._threshold: # Detection
                         # Save spectrum
                         print('Detection: %d' % MAX)
-                        if self._gpio_started and not self._stop_graph:
+                        if self._gpio_started and not self.stop_graph:
                             self._save_spectrum(self._location, self._last_spectrum)
                     else:
                         # Increase integration time
