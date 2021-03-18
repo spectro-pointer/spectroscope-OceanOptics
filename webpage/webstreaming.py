@@ -7,13 +7,10 @@ from flask_bootstrap import Bootstrap
 from flask import request, redirect
 from webpage.config import *
 from webpage.forms import ConfigForm
-from time import sleep, time
+from time import sleep
 from detector3_mock import MockDetector
 from spectrometer3_mock import MockSpectrometer
 
-
-t0=time()
-t1=time()
 def create_app(det):
     app = Flask(
                 __name__,
@@ -66,8 +63,7 @@ def create_app(det):
 
     @app.route("/stop_graph", methods=["GET","POST"])
     def stop_graph():
-        state = request.form['state'] == 'true'
-        det.stop_graph = state
+        det.stop_graph = request.form['state'] == 'true'
         return "Ok"
 
     @app.route("/spectroscope", methods=["GET","POST"])
@@ -97,9 +93,9 @@ def create_app(det):
         det.integration_time    = get_spectro_scope('integration_time',app)
         det.integration_factor  = get_spectro_scope('integration_factor',app)
         det.threshold           = get_spectro_scope('threshold',app)
-        return render_template("spectroscope.html", \
-                                form=form, \
-                                auto_en=(True if "automatic" == det.operation_mode else False))
+        return render_template("spectroscope.html",
+                                form=form,
+                                auto_en=("automatic" == det.operation_mode))
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():

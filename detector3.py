@@ -99,7 +99,6 @@ class Detector(Thread):
     def stop_graph(self):
         return self._stop_graph
 
-
     @stop_graph.setter
     def stop_graph(self,stop_graph):
         self._stop_graph = stop_graph
