@@ -1,0 +1,23 @@
+body { background: #ebf0ed !important; } /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
+.bg-sp {
+  background-color: #3f8a64;
+}
+.btn-primary:hover {
+  color: #207449;
+  background-color: #628c77;
+  border-color: #207449;
+}
+.btn-primary:hover {
+  color: #207449;
+  background-color: #628c77;
+  border-color: #207449;
+}
+.btn-primary:focus,.btn-primary:active {
+    outline: none !important;
+    box-shadow: none;
+    color: #207449;
+    background-color: #628c77;
+    border-color: #207449;
+}
+
+/* body { background: #a0b8ab !important; } /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
