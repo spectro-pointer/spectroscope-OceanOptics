@@ -40,11 +40,11 @@
                     <div class="col-12 order-sm-1">
                         <div class="row my-2 d-flex flex-row-reverse">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                              <label class="btn btn-secondary bg-sp active">
-                                <input type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
+                              <label id="button_1" class="button btn btn-secondary bg-sp active">
+                                <input class="button button1 btn btn-secondary text text-white" type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
                               </label>
-                              <label class="btn btn-secondary bg-sp">
-                                <input type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
+                              <label id="button_2" class="button btn btn-secondary bg-sp">
+                                <input class="button button2 btn btn-secondary text text-white" type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
                               </label>
                             </div>
                         </div>
@@ -77,9 +77,9 @@
                         <div class="col-sm-12 col-lg-6 order-sm-2">
                             <div class="row mb-2 mt-lg-5 mt-sm-2 d-flex flex-row-reverse pr-3">
                                 <div id="button-group" class="btn-group btn-group-vertical btn-group-lg col-12" role="group">
-                                    <button type="submit" class="btn btn-secondary bg-sp m-0 p-2" style="border-color: #3f8a64;">Actualizar</button>
-                                    <input type="button" class="btn btn-secondary bg-sp  m-0 p-2" style="border-color: #3f8a64;" id="save_spectrum" autocomplete="off" value="Save Spectrum">
-                                    <input type="button" class="btn btn-secondary        m-0 p-2" style="border-color: #3f8a64;" id="stop_graph" autocomplete="off" value="Stop Graph">
+                                    <button type="submit" class="button button3 btn btn-secondary text text-white m-0 p-2">Actualizar</button>
+                                    <input  type="button" class="button button4 btn btn-secondary text text-white m-0 p-2" id="save_spectrum" autocomplete="off" value="Save Spectrum">
+                                    <input  type="button" class="button button5 btn btn-secondary text text-white m-0 p-2" id="stop_graph" autocomplete="off" value="Stop Graph">
                                 </div>
                             </div>
                         </div>
