@@ -1,5 +1,4 @@
 from webpage.utils import *
-import threading
 import argparse
 from flask import Flask, url_for, jsonify
 from flask import render_template
@@ -7,7 +6,6 @@ from flask_bootstrap import Bootstrap
 from flask import request, redirect
 from webpage.config import *
 from webpage.forms import ConfigForm
-from time import sleep
 from detector3_mock import MockDetector
 from spectrometer3_mock import MockSpectrometer
 
@@ -41,12 +39,30 @@ def create_app(det):
 
     @app.route('/data')
     def spectro_data():
+        data = []
         yAxe = det.get_last_spectrum()
-        return jsonify({'results':yAxe})
+        xAxe = det.get_wavelengths()
+        max_intensity = det.MAX_INTENSITY
+        for x,y in zip(xAxe,yAxe):
+            data.append([x,y])
+        if not data:
+            data.append([0,0])
+        return jsonify({'data':data,'max_intensity':max_intensity})
+
+    @app.route('/web_config')
+    def set_web_config():
+        integration_time = det.integration_time
+        auto_en = bool("automatic" == det.operation_mode)
+        return jsonify({'integration_time': integration_time,'auto_en':auto_en})
 
     @app.route("/save_spectrum", methods=["GET","POST"])
     def save_spectrum():
         det._save_spectrum(det.location,det.get_last_spectrum())
+        return "Ok"
+
+    @app.route("/stop_graph", methods=["GET","POST"])
+    def stop_graph():
+        det.stop_graph = request.form['state'] == 'true'
         return "Ok"
 
     @app.route("/spectroscope", methods=["GET","POST"])
@@ -60,9 +76,6 @@ def create_app(det):
             spectro_scope_config['threshold']            = form.threshold.data
 
             set_spectro_scope(app,**spectro_scope_config)
-
-            return redirect(url_for('set_config_spectrometer'))
-
         else:
             form.integration_time.render_kw     = {'value':get_spectro_scope('integration_time',app)}
             form.integration_factor.render_kw   = {'value':get_spectro_scope('integration_factor',app)}
@@ -76,7 +89,10 @@ def create_app(det):
         det.integration_time    = get_spectro_scope('integration_time',app)
         det.integration_factor  = get_spectro_scope('integration_factor',app)
         det.threshold           = get_spectro_scope('threshold',app)
-        return render_template("spectroscope.html",data_x=det.get_wavelengths(),integration_time=integration_time,form=form, auto_en= (True if "automatic" == det.operation_mode else False))
+
+        return render_template("spectroscope.html",
+                                form=form,
+                                auto_en=("automatic" == det.operation_mode))
 
     @app.route("/default",methods=['GET','POST'])
     def set_default_config():

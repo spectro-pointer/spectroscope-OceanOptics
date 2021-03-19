@@ -42,6 +42,7 @@ class Detector(Thread):
         print('Save location:', self.DEFAULT_LOCATION)
 
         self.MIN_INTEGRATION_TIME = float(self._spectrometer.get_min_integration())/1e6
+        print('Min integration time:', self.MIN_INTEGRATION_TIME)
         print('Max integration time:', self.MAX_INTEGRATION_TIME)
         
         self.MAX_INTENSITY        = int(self._spectrometer.get_max_intensity())
@@ -64,6 +65,8 @@ class Detector(Thread):
         self._gpio_started = False
 
         self.started = False
+
+        self.stop_graph = False
 
         self.setDaemon(True)
         Thread.start(self)
@@ -88,7 +91,9 @@ class Detector(Thread):
 
     @integration_time.setter
     def integration_time(self, integration_time):
-        assert self.MIN_INTEGRATION_TIME <= integration_time <= self.MAX_INTEGRATION_TIME
+        if not self.MIN_INTEGRATION_TIME <= integration_time <= self.MAX_INTEGRATION_TIME:
+            print(f'Integration time invalid: {integration_time} - setting default one: {self.DEFAULT_INTEGRATION_TIME} ')
+            integration_time = self.DEFAULT_INTEGRATION_TIME
         self._integration_time = integration_time
         
         self._spectrometer.set_integration(self._integration_time*1e6)
@@ -102,7 +107,9 @@ class Detector(Thread):
 
     @threshold.setter
     def threshold(self, threshold):
-        assert 0 <= threshold <= self.MAX_INTENSITY
+        if not 0 <= threshold <= self.MAX_INTENSITY:
+            print(f'threshold invalid: {threshold} - setting default one: {self.DEFAULT_THRESHOLD} ')
+            threshold = self.DEFAULT_THRESHOLD
         self._threshold = threshold
 
     @property
@@ -126,7 +133,9 @@ class Detector(Thread):
 
     @integration_factor.setter
     def integration_factor(self, integration_factor):
-        assert 0. < integration_factor < 1.
+        if not 0 < integration_factor < 1:
+            print(f'Integration factor invalid: {integration_factor} - setting default one: {self.DEFAULT_INTEGRATION_FACTOR} ')
+            integration_factor = self.DEFAULT_INTEGRATION_FACTOR
         self._integration_factor = integration_factor
 
     @property
@@ -202,15 +211,17 @@ class Detector(Thread):
                 # Baseline reduction
                 spectrum = [v-MIN for v in spectrum]
                 # Capture spectrum values
-                self._last_spectrum = spectrum
+                # print("STOP GRAPH",self.stop_graph)
+                if not self.stop_graph:
+                    self._last_spectrum = spectrum
                 # Detection
                 MAX -= MIN
                 if self._operation_mode=='automatic':
                     if MAX > self._threshold: # Detection
                         # Save spectrum
                         print('Detection: %d' % MAX)
-                        if self._gpio_started:
-                            self._save_spectrum(self._location, spectrum)
+                        if self._gpio_started and not self.stop_graph:
+                            self._save_spectrum(self._location, self._last_spectrum)
                     else:
                         # Increase integration time
                         self._integration_time /= self._integration_factor
