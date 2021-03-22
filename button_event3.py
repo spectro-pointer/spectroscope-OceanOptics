@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import RPi.GPIO as GPIO, time, os, subprocess
 
-from detector import Detector
+from detector3 import Detector
 
 ip = 'localhost'
 det = Detector(ip)
