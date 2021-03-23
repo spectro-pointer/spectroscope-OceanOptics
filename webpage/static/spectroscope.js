@@ -10,7 +10,7 @@ getData.done(function(results) {
     g = new Dygraph(document.getElementById("spectrum"), data_x_y,
                         {
                           drawPoints: true,
-                          showRoller: true,
+                          showRoller: false,
                           valueRange: [0.0, results.max_intensity*1.1],
                           labels: ['Time', 'Random']
                         });

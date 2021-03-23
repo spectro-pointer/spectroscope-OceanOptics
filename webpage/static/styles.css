@@ -44,8 +44,8 @@ body { background: #ebf0ed !important; } /* Adding !important forces the browser
 
 button.btn-secondary:hover:enabled,
 input.btn-secondary:hover:enabled,
-input.btn-secondary:focus:disabled,
-input.btn-secondary:active:enabled{
+input.btn-secondary:focus:disabled
+{
   color: white !important;
   background: #2cab6a !important;
   border-color: #2cab6a !important;
@@ -67,6 +67,24 @@ input.btn-secondary:focus:enabled
 
 input.btn_save:focus:enabled,
 input.btn_save:active:enabled
+{
+  color: white !important;
+  background: #2cab6a !important;
+  border-color: #2cab6a !important;
+}
+
+input.btn_stop:focus:disabled,
+input.btn_stop:hover:disabled,
+input.btn_stop:active:disabled
+{
+  color: white !important;
+  background: #207449 !important;
+  border-color: #207449 !important;
+}
+
+input.btn_stop:focus:enabled,
+input.btn_stop:hover:enabled,
+input.btn_stop:active:enabled
 {
   color: white !important;
   background: #2cab6a !important;
