@@ -47,7 +47,7 @@ def create_app(det):
             data.append([x,y])
         if not data:
             data.append([0,0])
-        return jsonify({'data':data,'max_intensity':max_intensity})
+        return jsonify({'data':data,'max_intensity':max_intensity,'button_flag':(det.button_flag == "true")})
 
     @app.route('/web_config')
     def set_web_config():
@@ -117,7 +117,7 @@ def start_webstreaming():
 
     # start the flask app
     print("Using mock spectrometer")
-    spectrometer = MockSpectrometer(ip_address=args["ip_det"], port=1865, channel=0)
+    spectrometer = Spectrometer(ip_address=args["ip_det"], port=1865, channel=0)
     det = Detector(spectrometer)
     app = create_app(det)
     init_db(app)

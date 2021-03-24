@@ -90,3 +90,11 @@ input.btn_stop:active:enabled
   background: #2cab6a !important;
   border-color: #2cab6a !important;
 }
+
+.beacon_enabled{
+ color: #207449;
+}
+
+.beacon_disabled{
+ color: #c94f4f;
+}

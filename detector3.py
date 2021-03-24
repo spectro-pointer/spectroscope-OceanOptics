@@ -68,6 +68,10 @@ class Detector(Thread):
 
         self.stop_graph = False
 
+        self.change_integration = False
+
+        self.button_flag = True
+
         self.setDaemon(True)
         Thread.start(self)
     
@@ -95,8 +99,9 @@ class Detector(Thread):
             print(f'Integration time invalid: {integration_time} - setting default one: {self.DEFAULT_INTEGRATION_TIME} ')
             integration_time = self.DEFAULT_INTEGRATION_TIME
         self._integration_time = integration_time
-        
-        self._spectrometer.set_integration(self._integration_time*1e6)
+
+        if self.operation_mode == "manual":
+            self.change_integration = True
 
     @property
     def threshold(self):
@@ -188,6 +193,7 @@ class Detector(Thread):
                 if self.shallStop:
                     break
             while self.started is True:
+                self.button_flag = not self.button_flag
                 with self.cv:
                     if self.shallStop or self.started is False:
                             break
@@ -217,6 +223,7 @@ class Detector(Thread):
                 # Detection
                 MAX -= MIN
                 if self._operation_mode=='automatic':
+                    self.change_integration = False
                     if MAX > self._threshold: # Detection
                         # Save spectrum
                         print('Detection: %d' % MAX)
@@ -230,6 +237,11 @@ class Detector(Thread):
                         print('No detection: %d. Integration time: %f' % (MAX, self._integration_time))
                         self._spectrometer.set_integration(self._integration_time*1e6)
                         continue
+
+                elif self.change_integration:
+                    self._spectrometer.set_integration(self._integration_time*1e6)
+                    self.change_integration = False
+
     #    print('done.\nCurrent status:', spectrometer.get_current_status())
 
     def get_last_spectrum(self):
