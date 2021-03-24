@@ -70,25 +70,31 @@ def create_app(det):
         form = ConfigForm()
 
         if request.method == 'POST':
-            spectro_scope_config = {}
-            spectro_scope_config['integration_time']     = form.integration_time.data
-            spectro_scope_config['integration_factor']   = form.integration_factor.data
-            spectro_scope_config['threshold']            = form.threshold.data
+            # validate values inside detector
+            det.integration_time    = form.integration_time.data
+            if det.operation_mode == "manual":
+                det.integration_factor  = form.integration_factor.data
+                det.threshold           = form.threshold.data
 
+            # save values to DB
+            spectro_scope_config = {}
+            spectro_scope_config['integration_time']     = det.integration_time
+            spectro_scope_config['integration_factor']   = det.integration_factor
+            spectro_scope_config['threshold']            = det.threshold
             set_spectro_scope(app,**spectro_scope_config)
         else:
-            form.integration_time.render_kw     = {'value':get_spectro_scope('integration_time',app)}
-            form.integration_factor.render_kw   = {'value':get_spectro_scope('integration_factor',app)}
-            form.threshold.render_kw            = {'value':get_spectro_scope('threshold',app)}
+            # load values form DB
+            det.integration_time    = get_spectro_scope('integration_time',app)
+            det.integration_factor  = get_spectro_scope('integration_factor',app)
+            det.threshold           = get_spectro_scope('threshold',app)
 
-            form.integration_time.label         = 'INTEGRATION TIME:'
-            form.integration_factor.label       = 'INTEGRATION FACTOR:'
-            form.threshold.label                = 'THRESHOLD:'
-
-        integration_time                    = get_spectro_scope('integration_time',app)*1000 #Pass integration time to ms
-        det.integration_time    = get_spectro_scope('integration_time',app)
-        det.integration_factor  = get_spectro_scope('integration_factor',app)
-        det.threshold           = get_spectro_scope('threshold',app)
+        # load form
+        form.integration_time.render_kw     = {'value':det.integration_time}
+        form.integration_factor.render_kw   = {'value':det.integration_factor}
+        form.threshold.render_kw            = {'value':det.threshold}
+        form.integration_time.label         = 'INTEGRATION TIME:'
+        form.integration_factor.label       = 'INTEGRATION FACTOR:'
+        form.threshold.label                = 'THRESHOLD:'
 
         return render_template("spectroscope.html",
                                 form=form,
