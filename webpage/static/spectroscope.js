@@ -83,10 +83,12 @@ function disableThreshold() {
 
 function disableElement() {
     document.getElementById("save_spectrum").disabled = true;
+    $("#save_spectrum").addClass('button_disabled');
 }
 
 function enableElement() {
     document.getElementById("save_spectrum").disabled = false;
+    $("#save_spectrum").removeClass('button_disabled');
 }
 
 function enableIntegrationFactor() {
@@ -108,6 +110,10 @@ function showProgressBar() {
 document.getElementById("automatic").addEventListener("click", function() {
     disableElement();
     select_mode("automatic");
+    $("#button_1").removeClass('button_disabled');
+    $("#automatic").removeClass('button_disabled');
+    $("#button_2").addClass('button_disabled');
+    $("#manual").addClass('button_disabled');
     auto_en = true;
     hideProgressBar();
     disableIntegrationFactor();
@@ -117,6 +123,10 @@ document.getElementById("automatic").addEventListener("click", function() {
 document.getElementById("manual").addEventListener("click", function() {
     enableElement();
     select_mode("manual");
+    $("#button_2").removeClass('button_disabled');
+    $("#manual").removeClass('button_disabled');
+    $("#button_1").addClass('button_disabled');
+    $("#automatic").addClass('button_disabled');
     auto_en = false;
     showProgressBar();
     enableIntegrationFactor();
@@ -129,13 +139,14 @@ document.getElementById("save_spectrum").addEventListener("click", function() {
 
 document.getElementById("stop_graph").addEventListener("click", function() {
     stop_graph = !stop_graph;
+    $("#stop_graph").toggleClass('button_disabled');
     if (stop_graph == true){
-        $("#stop_graph").addClass('button-clicked');
+        //$("#stop_graph").addClass('button_disabled');
         enableElement();
         hideProgressBar();
     }
     else{
-        $("#stop_graph").addClass('button-not-clicked');
+        //$("#stop_graph").removeClass('button_disabled');
         if (auto_en == true){
             disableElement();
         }
@@ -158,12 +169,20 @@ $(document).ready(function () {
             disableElement();
             disableIntegrationFactor();
             disableThreshold();
+            $("#button_2").addClass('button_disabled');
+            $("#manual").addClass('button_disabled');
+            $("#button_1").removeClass('button_disabled');
+            $("#automatic").removeClass('button_disabled');
         }
         else{
             showProgressBar();
             enableElement();
             enableIntegrationFactor();
             enableThreshold();
+            $("#button_2").removeClass('button_disabled');
+            $("#manual").removeClass('button_disabled');
+            $("#button_1").addClass('button_disabled');
+            $("#automatic").addClass('button_disabled');
         }
         updateWebConfig(intTime);
         updateChart();

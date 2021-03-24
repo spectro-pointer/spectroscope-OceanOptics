@@ -1,0 +1,92 @@
+@charset "UTF-8";
+
+body { background: #ebf0ed !important; } /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
+
+:root {
+  --blue: #007bff;
+  --indigo: #6610f2;
+  --purple: #6f42c1;
+  --pink: #e83e8c;
+  --red: #dc3545;
+  --orange: #fd7e14;
+  --yellow: #ffd40c;
+  --green: #207449;
+  --teal: #20c997;
+  --cyan: #17a2b8;
+  --white: #fff;
+  --gray: #6c757d;
+  --gray-dark: #343a40;
+  --primary: #207449;
+  --secondary: #6c757d;
+  --success: #207449;
+  --info: #17a2b8;
+  --warning: #f5e502;
+  --danger: #dc3545;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  --breakpoint-xs: 0;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+}
+
+.bg-sp {
+  background-color: #207449;
+}
+
+.button
+{
+  color: #207449;
+  background-color: #207449 !important;
+  border-color: #207449;
+}
+
+button.btn-secondary:hover:enabled,
+input.btn-secondary:hover:enabled,
+input.btn-secondary:focus:disabled
+{
+  color: white !important;
+  background: #2cab6a !important;
+  border-color: #2cab6a !important;
+}
+
+input.btn-secondary:disabled,
+input.btn-secondary:focus:enabled
+{
+  color: white !important;
+  background: #c94f4f !important;
+  border-color: #c94f4f !important;
+}
+
+.button_disabled{
+  color: white !important;
+  background: #c94f4f !important;
+  border-color: #c94f4f !important;
+}
+
+input.btn_save:focus:enabled,
+input.btn_save:active:enabled
+{
+  color: white !important;
+  background: #2cab6a !important;
+  border-color: #2cab6a !important;
+}
+
+input.btn_stop:focus:disabled,
+input.btn_stop:hover:disabled,
+input.btn_stop:active:disabled
+{
+  color: white !important;
+  background: #207449 !important;
+  border-color: #207449 !important;
+}
+
+input.btn_stop:focus:enabled,
+input.btn_stop:hover:enabled,
+input.btn_stop:active:enabled
+{
+  color: white !important;
+  background: #2cab6a !important;
+  border-color: #2cab6a !important;
+}
