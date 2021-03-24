@@ -238,9 +238,12 @@ class Detector(Thread):
     def get_wavelengths(self):
         return [float(v) for v in self._wavelengths]
 
-    def button_stop(self):
+    def button_stop(self,arg):
         print("GPIO STOP event")
         self._gpio_started = False
+
+    def button_start(self,arg):
+        self._gpio_started = True
 
     def configure_gpio(self):
         # Setup the Pin with Internal pullups enabled and PIN in reading mode.
