@@ -30,14 +30,21 @@
 
                 <form method='POST' action='/spectroscope' enctype='multipart/form-data'>
                     <div class="col-12 order-sm-1">
-                        <div class="row my-2 d-flex flex-row-reverse">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                              <label id="button_1" class="button btn btn-secondary bg-sp active text text-white">
-                                <input class="button btn btn-secondary text text-white" type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
-                              </label>
-                              <label id="button_2" class="button btn btn-secondary bg-sp text text-white">
-                                <input class="button btn btn-secondary text text-white" type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
-                              </label>
+                        <div class="row my-2">
+                            <div class="col-6">
+                                <i class="fas fa-circle pl-1 beacon_enabled" id="button_flag"></i>
+                            </div>
+                            <div class="col-6">
+                                <div class="row my-2 d-flex flex-row-reverse">
+                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                      <label id="button_1" class="button btn btn-secondary bg-sp active text text-white">
+                                        <input class="button btn btn-secondary text text-white" type="radio" name="options" id="automatic" autocomplete="off" {% if auto_en == true %} checked {% endif %}> Automatic
+                                      </label>
+                                      <label id="button_2" class="button btn btn-secondary bg-sp text text-white">
+                                        <input class="button btn btn-secondary text text-white" type="radio" name="options" id="manual" autocomplete="off" {% if auto_en == false %} checked {% endif %}> Manual
+                                      </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

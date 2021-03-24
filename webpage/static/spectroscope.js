@@ -3,6 +3,7 @@ var intTime = 1000;
 var newIntTime = 0;
 var auto_en = true;
 var stop_graph = false;
+var button_flag = true;
 var getData = jQuery.get("/data");
 var g;
 getData.done(function(results) {
@@ -33,10 +34,12 @@ function updateChart(){
     var updatedData = jQuery.get('/data');
     updatedData.done(function(results){
         var data_x_y = results.data;
+        button_flag  = results.button_flag;
         //############################################
         //Changes data in graph
         data_x_y = results.data;
         g.updateOptions( { 'file': data_x_y } );
+        $("#button_flag").toggleClass('beacon_disabled');
     });
 
     //If auto_en == false, then the manual mode is selected

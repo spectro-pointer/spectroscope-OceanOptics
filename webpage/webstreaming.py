@@ -6,8 +6,8 @@ from flask_bootstrap import Bootstrap
 from flask import request, redirect
 from webpage.config import *
 from webpage.forms import ConfigForm
-from detector3_mock import MockDetector
-from spectrometer3_mock import MockSpectrometer
+from detector3 import Detector
+from spectrometer3 import Spectrometer
 
 
 def create_app(det):
@@ -47,7 +47,7 @@ def create_app(det):
             data.append([x,y])
         if not data:
             data.append([0,0])
-        return jsonify({'data':data,'max_intensity':max_intensity})
+        return jsonify({'data':data,'max_intensity':max_intensity,'button_flag':(det.button_flag == "true")})
 
     @app.route('/web_config')
     def set_web_config():
@@ -109,16 +109,16 @@ def start_webstreaming():
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-i", "--ip", type=str, default="0.0.0.0", help="ip address of the device")
-    ap.add_argument("-o", "--port", type=int, default=8081, help="ephemeral port number of the server")
+    ap.add_argument("-o", "--port", type=int, default=8087, help="ephemeral port number of the server")
     ap.add_argument("-l", "--location", type=str, default='captures', help="folder to save the files")
-    ap.add_argument("-id","--ip_det", type=str, default="0.0.0.1", help="ip address of the device")
+    ap.add_argument("-id","--ip_det", type=str, default="0.0.0.0", help="ip address of the device")
 
     args = vars(ap.parse_args())
 
     # start the flask app
     print("Using mock spectrometer")
-    spectrometer = MockSpectrometer(ip_address=args["ip_det"], port=1865, channel=0)
-    det = MockDetector(spectrometer)
+    spectrometer = Spectrometer(ip_address=args["ip_det"], port=1865, channel=0)
+    det = Detector(spectrometer)
     app = create_app(det)
     init_db(app)
 
